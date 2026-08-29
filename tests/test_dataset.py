@@ -64,14 +64,17 @@ def test_questions_are_unique():
 
 
 def test_rename_variant_keeps_the_base_answer():
-    """A rename is a surface rewrite, so its answer must match its base item."""
+    """A rename is a surface rewrite, so its answer must match its base item.
+
+    This applies to every answer type, including choice. A choice rename must
+    restate the scenario without renaming the entity that is itself the answer,
+    since an item whose answer string changes cannot be checked here and would
+    rely entirely on review.
+    """
     by_id = {item["id"]: item for item in ITEMS}
     for family in FAMILIES:
         base = by_id[f"{family}.base"]
         rename = by_id[f"{family}.rename"]
-        if base["answer_type"] == "choice":
-            # Choice answers may be renamed along with the entities they name.
-            continue
         assert base["target"] == rename["target"], f"{family}: rename changed the answer"
 
 

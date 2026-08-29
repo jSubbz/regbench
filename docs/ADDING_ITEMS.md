@@ -123,8 +123,9 @@ item's, asserted by a test for `integer` and `quantity`.
 Swapping one word is too weak: it tests a token, not presentation. Rewrite the
 sentence.
 
-`choice` items are exempt, since renaming Task `A` to `t_sensor` renames the
-answer itself.
+This applies to `choice` items too. Restate the scenario without renaming the
+entity that is itself the answer: renaming Task `A` to `t_sensor` would change
+the answer string and put the item outside the check.
 
 ### 4. Write the renumber variant
 

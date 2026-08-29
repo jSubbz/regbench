@@ -12,12 +12,13 @@ Four checks per family:
 
 `tools/verify_answers.py` covers arithmetic and transcription on items with a
 check block. It cannot judge whether a formula is the right formula or whether a
-question is ambiguous. Families marked **manual** have no automated check at all.
+question is ambiguous. Families marked **manual** have no recomputed answer key,
+so their answers rest on this review.
 
 Tick the boxes under each family, then rerun `tools/build_checklist.py` to update
 the summary table. Ticks survive regeneration; `--reset` clears them.
 
-**0 of 20 families reviewed.**
+**3 of 20 families reviewed.**
 
 | Family | Domain | Check | Correct | Unambiguous | Rename | Renumber |
 | --- | --- | --- | :-: | :-: | :-: | :-: |
@@ -36,11 +37,11 @@ the summary table. Ticks survive regeneration; `--reset` clears them.
 | [`gpio-rmw`](#gpio-rmw) | gpio | auto |  |  |  |  |
 | [`gpio-pullup`](#gpio-pullup) | gpio | auto |  |  |  |  |
 | [`field-extract`](#field-extract) | registers | auto |  |  |  |  |
-| [`rtos-preempt`](#rtos-preempt) | rtos | **manual** |  |  |  |  |
+| [`rtos-preempt`](#rtos-preempt) | rtos | **manual** | ✓ | ✓ | ✓ | ✓ |
 | [`rtos-utilization`](#rtos-utilization) | rtos | auto |  |  |  |  |
 | [`rtos-rm-bound`](#rtos-rm-bound) | rtos | auto |  |  |  |  |
-| [`qnx-ipc`](#qnx-ipc) | rtos | **manual** |  |  |  |  |
-| [`timer-tick`](#timer-tick) | timers | auto |  |  |  |  |
+| [`qnx-ipc`](#qnx-ipc) | rtos | **manual** | ✓ | ✓ | ✓ | ✓ |
+| [`timer-tick`](#timer-tick) | timers | auto | ✓ | ✓ | ✓ | ✓ |
 
 ## Families
 
@@ -263,10 +264,10 @@ Answer `Task B`. Task B has the highest priority of the three, so a preemptive s
 
 Renumber answer `Task A`.
 
-- [ ] Correct
-- [ ] Unambiguous
-- [ ] Rename holds
-- [ ] Renumber holds
+- [x] Correct
+- [x] Unambiguous
+- [x] Rename holds
+- [x] Renumber holds
 
 ### rtos-utilization
 rtos, medium, auto
@@ -305,10 +306,10 @@ Answer `SEND-blocked`. Until the server calls MsgReceive() the message has not b
 
 Renumber answer `REPLY-blocked`.
 
-- [ ] Correct
-- [ ] Unambiguous
-- [ ] Rename holds
-- [ ] Renumber holds
+- [x] Correct
+- [x] Unambiguous
+- [x] Rename holds
+- [x] Renumber holds
 
 ### timer-tick
 timers, medium, auto
@@ -319,7 +320,7 @@ Answer `1000` Hz. 16 MHz / 64 = 250 kHz counter clock, and 250 kHz / 250 ticks =
 
 Renumber answer `250`.
 
-- [ ] Correct
-- [ ] Unambiguous
-- [ ] Rename holds
-- [ ] Renumber holds
+- [x] Correct
+- [x] Unambiguous
+- [x] Rename holds
+- [x] Renumber holds

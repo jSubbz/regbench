@@ -42,9 +42,12 @@ figure, not as a contamination measurement.
 Every family holds three items, one per variant. Rules that can be checked
 mechanically are enforced by `tests/test_dataset.py`.
 
-1. **`rename` does not change the answer.** Asserted for `integer` and
-   `quantity` items. `choice` items are exempt, since a rename may rename the
-   entity that is the answer (Task A becomes `t_sensor`).
+1. **`rename` does not change the answer.** Asserted for every answer type,
+   including `choice`. A choice rename restates the scenario without renaming
+   the entity that is itself the answer. An earlier version of `rtos-preempt`
+   renamed its tasks to threads, which changed the answer string and put the
+   item outside this check; it was rewritten to keep the task names and restate
+   the scheduler's behaviour instead.
 2. **`rename` changes more than one word.** The rewrite covers identifiers and
    sentence structure, so it tests presentation rather than one token.
 3. **`renumber` changes the question text**, and its answer is recomputed from
@@ -103,8 +106,8 @@ errors most likely when writing sixty answers by hand. On its first run it caugh
 one: a bit-field extraction hand-computed as `0x3C` where the value is `0x3D`.
 
 Six `choice` items carry no check block, since there is no formula to recompute.
-Those depend entirely on review, and the `rename` assertion also exempts them, so
-they carry no automated check of any kind.
+Their answers depend on review. They are still covered by the rename assertion
+above, so no item in the set is entirely unchecked.
 
 ## Scoring design
 

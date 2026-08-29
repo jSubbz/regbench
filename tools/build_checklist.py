@@ -38,7 +38,8 @@ Four checks per family:
 
 `tools/verify_answers.py` covers arithmetic and transcription on items with a
 check block. It cannot judge whether a formula is the right formula or whether a
-question is ambiguous. Families marked **manual** have no automated check at all.
+question is ambiguous. Families marked **manual** have no recomputed answer key,
+so their answers rest on this review.
 
 Tick the boxes under each family, then rerun `tools/build_checklist.py` to update
 the summary table. Ticks survive regeneration; `--reset` clears them.
