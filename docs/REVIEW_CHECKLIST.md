@@ -29,28 +29,28 @@ be made from this file alone.
 Tick the boxes under each family, then rerun `tools/build_checklist.py` to update
 the summary table. Ticks survive regeneration; `--reset` clears them.
 
-**3 of 20 families reviewed.**
+**20 of 20 families reviewed.**
 
 | Family | Domain | Check | Correct | Unambiguous | Rename | Renumber |
 | --- | --- | --- | :-: | :-: | :-: | :-: |
-| [`i2c-addr`](#i2c-addr) | i2c | auto |  |  |  |  |
-| [`i2c-strap`](#i2c-strap) | i2c | auto |  |  |  |  |
-| [`spi-mode`](#spi-mode) | spi | auto |  |  |  |  |
-| [`spi-clock`](#spi-clock) | spi | auto |  |  |  |  |
-| [`uart-frame`](#uart-frame) | uart | auto |  |  |  |  |
-| [`uart-baud`](#uart-baud) | uart | auto |  |  |  |  |
-| [`adc-code-to-voltage`](#adc-code-to-voltage) | adc | auto |  |  |  |  |
-| [`adc-lsb`](#adc-lsb) | adc | auto |  |  |  |  |
-| [`adc-voltage-to-code`](#adc-voltage-to-code) | adc | auto |  |  |  |  |
-| [`pwm-ontime`](#pwm-ontime) | pwm | auto |  |  |  |  |
-| [`pwm-freq`](#pwm-freq) | pwm | auto |  |  |  |  |
-| [`pwm-resolution`](#pwm-resolution) | pwm | auto |  |  |  |  |
-| [`gpio-rmw`](#gpio-rmw) | gpio | auto |  |  |  |  |
-| [`gpio-pullup`](#gpio-pullup) | gpio | auto |  |  |  |  |
-| [`field-extract`](#field-extract) | registers | auto |  |  |  |  |
+| [`i2c-addr`](#i2c-addr) | i2c | auto | ✓ | ✓ | ✓ | ✓ |
+| [`i2c-strap`](#i2c-strap) | i2c | auto | ✓ | ✓ | ✓ | ✓ |
+| [`spi-mode`](#spi-mode) | spi | auto | ✓ | ✓ | ✓ | ✓ |
+| [`spi-clock`](#spi-clock) | spi | auto | ✓ | ✓ | ✓ | ✓ |
+| [`uart-frame`](#uart-frame) | uart | auto | ✓ | ✓ | ✓ | ✓ |
+| [`uart-baud`](#uart-baud) | uart | auto | ✓ | ✓ | ✓ | ✓ |
+| [`adc-code-to-voltage`](#adc-code-to-voltage) | adc | auto | ✓ | ✓ | ✓ | ✓ |
+| [`adc-lsb`](#adc-lsb) | adc | auto | ✓ | ✓ | ✓ | ✓ |
+| [`adc-voltage-to-code`](#adc-voltage-to-code) | adc | auto | ✓ | ✓ | ✓ | ✓ |
+| [`pwm-ontime`](#pwm-ontime) | pwm | auto | ✓ | ✓ | ✓ | ✓ |
+| [`pwm-freq`](#pwm-freq) | pwm | auto | ✓ | ✓ | ✓ | ✓ |
+| [`pwm-resolution`](#pwm-resolution) | pwm | auto | ✓ | ✓ | ✓ | ✓ |
+| [`gpio-rmw`](#gpio-rmw) | gpio | auto | ✓ | ✓ | ✓ | ✓ |
+| [`gpio-pullup`](#gpio-pullup) | gpio | auto | ✓ | ✓ | ✓ | ✓ |
+| [`field-extract`](#field-extract) | registers | auto | ✓ | ✓ | ✓ | ✓ |
 | [`rtos-preempt`](#rtos-preempt) | rtos | **manual** | ✓ | ✓ | ✓ | ✓ |
-| [`rtos-utilization`](#rtos-utilization) | rtos | auto |  |  |  |  |
-| [`rtos-rm-bound`](#rtos-rm-bound) | rtos | auto |  |  |  |  |
+| [`rtos-utilization`](#rtos-utilization) | rtos | auto | ✓ | ✓ | ✓ | ✓ |
+| [`rtos-rm-bound`](#rtos-rm-bound) | rtos | auto | ✓ | ✓ | ✓ | ✓ |
 | [`qnx-ipc`](#qnx-ipc) | rtos | **manual** | ✓ | ✓ | ✓ | ✓ |
 | [`timer-tick`](#timer-tick) | timers | auto | ✓ | ✓ | ✓ | ✓ |
 
@@ -73,10 +73,10 @@ i2c, easy, auto
 
 Why `0x90`: The 7-bit address is shifted left one place and the R/W bit occupies bit 0. A write sets R/W to 0, so the byte is (0x48 << 1) | 0 = 0x90.
 
-- [ ] Correct
-- [ ] Unambiguous
-- [ ] Rename holds
-- [ ] Renumber holds
+- [x] Correct
+- [x] Unambiguous
+- [x] Rename holds
+- [x] Renumber holds
 
 ### i2c-strap
 i2c, easy, auto
@@ -95,10 +95,10 @@ i2c, easy, auto
 
 Why `0x52`: 0b1010000 is 0x50. The strap pins contribute 0b10, giving 0x52.
 
-- [ ] Correct
-- [ ] Unambiguous
-- [ ] Rename holds
-- [ ] Renumber holds
+- [x] Correct
+- [x] Unambiguous
+- [x] Rename holds
+- [x] Renumber holds
 
 ### spi-mode
 spi, easy, auto
@@ -117,10 +117,10 @@ spi, easy, auto
 
 Why `2`: The mode number is (CPOL << 1) | CPHA, so CPOL=1, CPHA=0 is mode 2.
 
-- [ ] Correct
-- [ ] Unambiguous
-- [ ] Rename holds
-- [ ] Renumber holds
+- [x] Correct
+- [x] Unambiguous
+- [x] Rename holds
+- [x] Renumber holds
 
 ### spi-clock
 spi, easy, auto
@@ -139,10 +139,10 @@ spi, easy, auto
 
 Why `3` MHz: 48 MHz divided by 16 is 3 MHz.
 
-- [ ] Correct
-- [ ] Unambiguous
-- [ ] Rename holds
-- [ ] Renumber holds
+- [x] Correct
+- [x] Unambiguous
+- [x] Rename holds
+- [x] Renumber holds
 
 ### uart-frame
 uart, medium, auto
@@ -161,10 +161,10 @@ uart, medium, auto
 
 Why `5.5556` ms: Each frame carries 1 start + 8 data + 1 stop = 10 bit times. 64 frames is 640 bit times, and 640 / 115200 = 5.5556 ms.
 
-- [ ] Correct
-- [ ] Unambiguous
-- [ ] Rename holds
-- [ ] Renumber holds
+- [x] Correct
+- [x] Unambiguous
+- [x] Rename holds
+- [x] Renumber holds
 
 ### uart-baud
 uart, medium, auto
@@ -183,10 +183,10 @@ uart, medium, auto
 
 Why `38461.5` Hz: The baud rate is fclk / (oversampling x divisor) = 16e6 / (16 x 26) = 38461.5 baud.
 
-- [ ] Correct
-- [ ] Unambiguous
-- [ ] Rename holds
-- [ ] Renumber holds
+- [x] Correct
+- [x] Unambiguous
+- [x] Rename holds
+- [x] Renumber holds
 
 ### adc-code-to-voltage
 adc, easy, auto
@@ -205,10 +205,10 @@ adc, easy, auto
 
 Why `1.65` V: 2048 x 3.3 / 4096 = 1.65 V.
 
-- [ ] Correct
-- [ ] Unambiguous
-- [ ] Rename holds
-- [ ] Renumber holds
+- [x] Correct
+- [x] Unambiguous
+- [x] Rename holds
+- [x] Renumber holds
 
 ### adc-lsb
 adc, easy, auto
@@ -227,10 +227,10 @@ adc, easy, auto
 
 Why `0.80566` mV: One LSB is Vref / 2^N = 3.3 / 4096 = 0.80566 mV.
 
-- [ ] Correct
-- [ ] Unambiguous
-- [ ] Rename holds
-- [ ] Renumber holds
+- [x] Correct
+- [x] Unambiguous
+- [x] Rename holds
+- [x] Renumber holds
 
 ### adc-voltage-to-code
 adc, medium, auto
@@ -249,10 +249,10 @@ adc, medium, auto
 
 Why `1241`: 1.0 x 4096 / 3.3 = 1241.2, and truncation gives 1241.
 
-- [ ] Correct
-- [ ] Unambiguous
-- [ ] Rename holds
-- [ ] Renumber holds
+- [x] Correct
+- [x] Unambiguous
+- [x] Rename holds
+- [x] Renumber holds
 
 ### pwm-ontime
 pwm, easy, auto
@@ -271,10 +271,10 @@ pwm, easy, auto
 
 Why `17.5` us: The period is 1 / 20 kHz = 50 us, and 35 percent of 50 us is 17.5 us.
 
-- [ ] Correct
-- [ ] Unambiguous
-- [ ] Rename holds
-- [ ] Renumber holds
+- [x] Correct
+- [x] Unambiguous
+- [x] Rename holds
+- [x] Renumber holds
 
 ### pwm-freq
 pwm, medium, auto
@@ -293,10 +293,10 @@ pwm, medium, auto
 
 Why `10` kHz: 80 MHz / 8 = 10 MHz counter clock, and 10 MHz / 1000 ticks = 10 kHz.
 
-- [ ] Correct
-- [ ] Unambiguous
-- [ ] Rename holds
-- [ ] Renumber holds
+- [x] Correct
+- [x] Unambiguous
+- [x] Rename holds
+- [x] Renumber holds
 
 ### pwm-resolution
 pwm, easy, auto
@@ -315,10 +315,10 @@ pwm, easy, auto
 
 Why `10`: TOP + 1 = 1024 distinct steps, and log2(1024) = 10 bits.
 
-- [ ] Correct
-- [ ] Unambiguous
-- [ ] Rename holds
-- [ ] Renumber holds
+- [x] Correct
+- [x] Unambiguous
+- [x] Rename holds
+- [x] Renumber holds
 
 ### gpio-rmw
 gpio, medium, auto
@@ -337,10 +337,10 @@ gpio, medium, auto
 
 Why `0xA6`: 0b10101100 is 0xAC. Setting bit 1 gives 0b10101110, and clearing bit 3 gives 0b10100110, which is 0xA6.
 
-- [ ] Correct
-- [ ] Unambiguous
-- [ ] Rename holds
-- [ ] Renumber holds
+- [x] Correct
+- [x] Unambiguous
+- [x] Rename holds
+- [x] Renumber holds
 
 ### gpio-pullup
 gpio, easy, auto
@@ -359,10 +359,10 @@ gpio, easy, auto
 
 Why `0.33` mA: The full rail voltage appears across the resistor, so I = 3.3 V / 10 kilohm = 0.33 mA.
 
-- [ ] Correct
-- [ ] Unambiguous
-- [ ] Rename holds
-- [ ] Renumber holds
+- [x] Correct
+- [x] Unambiguous
+- [x] Rename holds
+- [x] Renumber holds
 
 ### field-extract
 registers, medium, auto
@@ -381,10 +381,10 @@ registers, medium, auto
 
 Why `0x3D`: Shifting right by 7 and masking six bits isolates the field: (0xDEADBEEF >> 7) & 0x3F = 0x3D.
 
-- [ ] Correct
-- [ ] Unambiguous
-- [ ] Rename holds
-- [ ] Renumber holds
+- [x] Correct
+- [x] Unambiguous
+- [x] Rename holds
+- [x] Renumber holds
 
 ### rtos-preempt
 rtos, easy, **manual**
@@ -425,10 +425,10 @@ rtos, medium, auto
 
 Why `56.25` %: Utilization is the sum of C/T: 1/4 + 2/8 + 1/16 = 0.5625, or 56.25 percent.
 
-- [ ] Correct
-- [ ] Unambiguous
-- [ ] Rename holds
-- [ ] Renumber holds
+- [x] Correct
+- [x] Unambiguous
+- [x] Rename holds
+- [x] Renumber holds
 
 ### rtos-rm-bound
 rtos, medium, auto
@@ -447,10 +447,10 @@ rtos, medium, auto
 
 Why `77.976` %: 3 x (2^(1/3) - 1) = 3 x 0.259921 = 0.779763, or 77.976 percent.
 
-- [ ] Correct
-- [ ] Unambiguous
-- [ ] Rename holds
-- [ ] Renumber holds
+- [x] Correct
+- [x] Unambiguous
+- [x] Rename holds
+- [x] Renumber holds
 
 ### qnx-ipc
 rtos, medium, **manual**
