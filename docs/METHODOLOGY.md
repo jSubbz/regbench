@@ -58,6 +58,26 @@ mechanically are enforced by `tests/test_dataset.py`.
 6. **Every item carries a rationale**, so a reviewer can check the reasoning and
    not just the value.
 
+### Terminology collisions
+
+Rule 4 covers conventions that differ in substance. A second failure mode is
+wording that is correct but collides with vendor terminology for a different
+concept, which makes an item ambiguous without making it wrong.
+
+The `spi-mode` rename originally read "samples incoming data on the first clock
+edge". That matches the standard definition of CPHA=0, phrased as "data are
+sampled on the leading (first) clock edge". But Freescale AN3904 defines CPHA on
+a different axis entirely, and attaches the phrase to the opposite value:
+CPHA=1 is "data transfer starts with the first edge of SCK", describing when a
+transfer begins rather than which edge samples. A reader carrying that framing
+has a defensible route to the wrong answer.
+
+The item now reads "captures each incoming data bit on the first of the two clock
+edges in that bit's period, rather than the second", which cannot be confused
+with transfer start. When checking an item for ambiguity, it is not enough that
+the wording is correct: check whether the same phrase means something else
+elsewhere in the domain's documentation.
+
 ## Tolerances
 
 `quantity` items declare a relative tolerance, because the answer key is written

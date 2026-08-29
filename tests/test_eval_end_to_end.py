@@ -9,6 +9,7 @@ values for a known response pattern.
 from __future__ import annotations
 
 from collections.abc import Callable
+from pathlib import Path
 
 import pytest
 from inspect_ai import eval as inspect_eval
@@ -116,3 +117,21 @@ def test_unparsable_answers_are_marked_unanswered(tmp_path):
     metrics = logs[0].results.scores[0].metrics
     assert metrics["accuracy"].value == pytest.approx(0.0)
     assert metrics["no_answer_rate"].value == pytest.approx(1.0)
+
+
+def test_task_file_loads_standalone():
+    """The CLI loads task.py by file path, not as a member of its package.
+
+    Under that loader a relative import in task.py raises ModuleNotFoundError, so
+    the module must use absolute imports. This reproduces the CLI's loader
+    directly, since the rest of the suite imports the package normally and would
+    not catch a regression here.
+    """
+    import importlib.util
+
+    task_path = Path(__file__).resolve().parent.parent / "src" / "regbench" / "task.py"
+    spec = importlib.util.spec_from_file_location(str(task_path.with_suffix("")), task_path)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    assert callable(module.regbench)

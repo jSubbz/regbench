@@ -7,8 +7,8 @@ from pathlib import Path
 from inspect_ai import Task, task
 from inspect_ai.solver import generate, system_message
 
-from .dataset import DEFAULT_DATASET, regbench_dataset
-from .scorer import answer_match
+from regbench.dataset import DEFAULT_DATASET, regbench_dataset
+from regbench.scorer import answer_match
 
 SYSTEM_PROMPT = """You are answering questions about embedded systems hardware and \
 real-time software. Work through the problem, then give your final answer on its own \
