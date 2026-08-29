@@ -14,14 +14,12 @@ QNX Neutrino message-passing IPC.
 
 ## The idea
 
-A single accuracy number on a static question set answers "how often was the
-model right", which is not quite the question worth asking. Two failure modes
-hide inside it, and they call for different responses:
+A single accuracy number hides two distinct failure modes:
 
-- The model was following the **surface form** of the question rather than its
-  content, so a rewrite that changes nothing of substance moves the score.
-- The model had the **specific instance** rather than the method, so the score
-  falls once the input values change.
+- **Surface-form dependence.** The response tracked how the question was worded
+  rather than what it asked. Rewording moves the score.
+- **Instance dependence.** The response reproduced a worked example rather than
+  applying the method. Changing the input values moves the score.
 
 regbench separates them by construction. Each family contains:
 
@@ -31,10 +29,10 @@ regbench separates them by construction. Each family contains:
 | `rename` | identifiers, peripheral names, phrasing | unchanged |
 | `renumber` | the input values | recomputed |
 
-A `rename` that costs accuracy is a surface-form dependency, because the question
-is the same question. A `renumber` that costs accuracy means the method did not
-transfer to values that cannot have been memorised in that exact combination.
-Both are reported as signed deltas in percentage points against the `base` items.
+A `rename` that costs accuracy is surface-form dependence: the question did not
+change. A `renumber` that costs accuracy means the method did not transfer to
+values that cannot have been memorised in that combination. Both are reported as
+signed deltas in percentage points against the `base` items.
 
 ## Metrics
 
@@ -51,13 +49,10 @@ Both are reported as signed deltas in percentage points against the `base` items
 The consistency metrics exist because the deltas can be fooled. A model that
 answers a different half of the item set correctly on each variant reports a
 delta near zero while agreeing on almost no individual family. Only the paired
-figure shows that, and it is the honest measure of whether the same knowledge is
-being used both times.
+figure shows that.
 
-`no_answer_rate` is reported separately rather than folded into accuracy, because
-a response that ignores the output format is a failure of instruction following
-rather than of embedded systems reasoning, and conflating the two makes the
-headline number mean less.
+`no_answer_rate` stays out of accuracy: ignoring the output format is a failure
+of instruction following, not of embedded systems reasoning.
 
 ## Scoring
 
@@ -86,17 +81,16 @@ verified 54 of 60 items (6 have no check block)
 answer key agrees with recomputation
 ```
 
-This is a check on transcription, unit prefixes and arithmetic, not on the
-physics. Both paths were written by the same author, so a conceptual error in a
-formula would appear in both. What catches that is human review, and
-`docs/REVIEW_CHECKLIST.md` records how each item was reviewed. The first run of
-this script found a genuine error in a hand-computed bit-field answer.
+This checks transcription, unit prefixes and arithmetic, not the physics. One
+author wrote both paths, so a conceptual error in a formula appears in both and
+passes; `docs/REVIEW_CHECKLIST.md` covers that case by review. The first run of
+this script caught a wrong hand-computed bit-field answer.
 
 ## Running it
 
 ```bash
 git clone https://github.com/jSubbz/regbench && cd regbench
-python -m venv .venv && source .venv/bin/activate
+python3 -m venv .venv && source .venv/bin/activate
 pip install -e ".[dev]"
 ```
 
@@ -124,44 +118,39 @@ inspect eval src/regbench/task.py --model openai/gpt-4o -T variants=base
 Tests and lint:
 
 ```bash
+python tools/verify_answers.py
 pytest
 ruff check . && ruff format --check .
-python tools/verify_answers.py
 ```
+
+`docs/ADDING_ITEMS.md` covers the run and test loop in more detail, and the
+procedure for adding a family of items.
 
 ## Limitations
 
-Stated plainly, because a benchmark that oversells itself is worse than no
-benchmark.
-
-- **It is small.** 20 families is enough to demonstrate the method and to
-  separate the two failure modes at a coarse grain. It is not enough to rank
-  frontier models against each other with confidence, and the standard error on
-  60 items is wide.
-- **One author.** Every item was written and reviewed by one person, so a
-  consistent misconception would be invisible. A second reviewer from the domain
-  is the obvious next step.
-- **The perturbations are hand-written, not generated.** That keeps the answer
-  key auditable, and it caps the item count. Generating perturbations
-  programmatically would scale it but would move the correctness risk into the
+- **Small.** 20 families demonstrates the method. The standard error on 60 items
+  is too wide to rank models against each other.
+- **One author.** A consistent misconception would be invisible. A second domain
+  reviewer is the next step.
+- **Perturbations are hand-written.** Keeps the key auditable, caps the item
+  count. Generating them would scale it and move the correctness risk into the
   generator.
-- **`rename` and `renumber` are single samples, not distributions.** A proper
-  robustness estimate would draw several perturbations per family and report the
-  variance across them. With one of each, an individual delta is noisy; the
-  aggregate over 20 families is the number to read.
-- **No contamination claim.** `renumber` makes memorisation of an exact instance
-  less likely to help. It does not prove a model never saw the source material,
-  and nothing here should be read as a contamination measurement.
-- **Difficulty is uneven and self-labelled.** The `easy`/`medium` tags are the
-  author's judgement, not calibrated against measured model performance.
+- **One perturbation per family.** No variance estimate. Read the aggregate over
+  20 families, not an individual delta.
+- **No contamination claim.** `renumber` makes a memorised instance less useful.
+  It does not prove a model never saw the material.
+- **Publication starts the clock.** These items are public, so future models may
+  train on them, and the `renumber` signal weakens as that happens. Results are
+  dated and tied to a commit for that reason. A held-out split is the standard
+  fix and is not implemented here.
+- **Difficulty is self-labelled**, not calibrated against measured performance.
 
 ## Scope
 
-This was built in about a week as a self-directed project, and it is my first
-project using Inspect. The embedded systems content comes from two years of
-computer engineering technology coursework and a capstone build; the evaluation
-methodology is newer to me than the subject matter is. Design decisions and the
-reasoning behind them are in `docs/METHODOLOGY.md`.
+Built in about a week as a self-directed project, and my first using Inspect.
+The embedded content comes from two years of computer engineering technology
+coursework and a capstone build; the evaluation methodology is newer to me than
+the subject matter. Design decisions are in `docs/METHODOLOGY.md`.
 
 No model results are published here. The repository ships the item set, the
 harness and the metrics; running it against a provider needs your own key.

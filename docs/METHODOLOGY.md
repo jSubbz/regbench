@@ -1,107 +1,103 @@
 # Methodology
 
-## What the benchmark is trying to measure
+## What the benchmark measures
 
-The target construct is the ability to carry out routine register-level and
-timing calculations that embedded firmware work depends on: converting between
-an address and the byte on the wire, sizing an ADC step, deriving a PWM period
-from a prescaler and a period register, deciding which task a preemptive
+Routine register-level and timing calculations that firmware work depends on:
+converting an address to the byte on the wire, sizing an ADC step, deriving a PWM
+period from a prescaler and period register, deciding which task a preemptive
 scheduler runs next.
 
-These are deliberately not research problems. They are the calculations that get
-done many times a day in firmware work, where being right matters and being
-almost right produces a device that misbehaves in the field. That makes them a
-reasonable probe of whether a model is usable as an assistant in that setting,
-and it makes the answer key checkable, which a harder item set would not.
+These are not research problems. They are calculations performed many times a day
+in firmware work, where being almost right produces a device that misbehaves in
+the field. That makes them a reasonable probe of whether a model is usable as an
+assistant in that setting, and it keeps the answer key checkable.
+
+The items are easy on purpose. On an easy set the ceiling is otherwise
+reachable, so a drop under perturbation is visible. On a hard set, accuracy is
+already low and a robustness delta is buried in noise.
 
 ## Why paired variants
 
 An accuracy figure on a fixed item set conflates several things. Two are
-separable with a small amount of structure in the dataset, so regbench separates
-them.
+separable with a small amount of dataset structure.
 
-**Surface-form dependence.** If restating a question with different identifiers
-and phrasing changes the score, the response was keyed to the surface rather than
-the content. The `rename` variant holds the computation and the answer fixed and
-changes only how the question is written: peripheral names, signal names,
-register names, and sentence structure. Any accuracy difference between `base`
-and `rename` is attributable to presentation.
+**Surface-form dependence.** The claim is that an item measures a capability. It
+may instead measure one particular string. Those are indistinguishable from a
+single score. The `rename` variant holds the computation and the answer fixed and
+changes only presentation: peripheral names, signal names, register names,
+sentence structure. Any difference between `base` and `rename` is therefore
+attributable to presentation, which is an inference an unpaired item set cannot
+support.
 
-**Instance dependence.** If changing the input values changes the score, the
-method did not transfer. The `renumber` variant keeps the structure of the
-question and substitutes different values, recomputing the answer. This is a
-weaker signal than it may look: it makes memorisation of one exact instance less
-useful, but it does not establish that the model never saw the material. It is
-reported as a robustness figure, not as a contamination measurement.
+**Instance dependence.** Public benchmarks leak into training data, and retrieval
+of a memorised answer is byte-identical to computing it. The `renumber` variant
+keeps the structure and substitutes new input values, so the specific
+input-to-answer pair is unlikely to exist as a stored association. This is a
+weaker signal than it looks: it makes a memorised instance less useful, but does
+not establish that a model never saw the material. It is reported as a robustness
+figure, not as a contamination measurement.
 
 ## Item construction rules
 
-Every family holds exactly three items, one per variant. The rules below are
-enforced by `tests/test_dataset.py` where they can be checked mechanically.
+Every family holds three items, one per variant. Rules that can be checked
+mechanically are enforced by `tests/test_dataset.py`.
 
-1. **`rename` must not change the answer.** For `integer` and `quantity` items
-   this is asserted in the test suite. `choice` items are exempt, because a
-   rename may rename the entity that is itself the answer (a task called `A`
-   becomes a thread called `t_sensor`).
-2. **`rename` must change more than one word.** The rewrite covers identifiers
-   and sentence structure, not a single substitution, so that it tests
-   presentation rather than one token.
-3. **`renumber` must change the question text**, and its answer is recomputed
-   from the new inputs rather than carried over.
-4. **Conventions are stated in the item, not assumed.** ADC items name the
-   convention `V = code x Vref / 2^N` explicitly, because the alternative
-   convention using `2^N - 1` is also in use and an unstated choice would make
-   the item ambiguous rather than difficult. Bit numbering states that bit 0 is
-   the least significant. Timer items state that a period spans `TOP + 1` ticks.
-5. **The requested unit and number base are named in the question**, so that a
-   correct calculation reported in a different unit is not marked wrong by
-   accident. The scorer also accepts equivalent units, so this is redundancy
-   rather than a load-bearing rule.
-6. **Every item carries a rationale** giving the calculation, so a reviewer can
-   check the reasoning and not just the final value.
+1. **`rename` does not change the answer.** Asserted for `integer` and
+   `quantity` items. `choice` items are exempt, since a rename may rename the
+   entity that is the answer (Task A becomes `t_sensor`).
+2. **`rename` changes more than one word.** The rewrite covers identifiers and
+   sentence structure, so it tests presentation rather than one token.
+3. **`renumber` changes the question text**, and its answer is recomputed from
+   the new inputs.
+4. **Conventions are stated, not assumed.** ADC items name `V = code x Vref /
+   2^N` explicitly, since the `2^N - 1` convention is also in use and an unstated
+   choice makes an item ambiguous rather than hard. Bit numbering states that bit
+   0 is least significant. Timer items state that a period spans `TOP + 1` ticks.
+5. **The requested unit and number base are named in the question.** The scorer
+   also accepts equivalent units, so this is redundancy rather than load-bearing.
+6. **Every item carries a rationale**, so a reviewer can check the reasoning and
+   not just the value.
 
 ## Tolerances
 
-`quantity` items declare a relative tolerance rather than being compared exactly,
-because the answer key is written to a readable number of significant figures.
-Tolerances are set per item, tight enough that a wrong method fails and loose
-enough that correct work rounded differently passes. Most are 0.002 to 0.005
-relative, which admits ordinary rounding at four significant figures and rejects
-an error of one part in a hundred.
+`quantity` items declare a relative tolerance, because the answer key is written
+to a readable number of significant figures. Tolerances are per item: tight
+enough that a wrong method fails, loose enough that correct work rounded
+differently passes. Most are 0.002 to 0.005, which admits rounding at four
+significant figures and rejects an error of one part in a hundred.
 
-Unit conversion happens before comparison, so a response in `us` against a key in
+Units are converted before comparison, so a response in `us` against a key in
 `ms` is graded on the physical quantity. A response in the wrong dimension is
 marked incorrect rather than converted.
 
 ## Two-path answer key checking
 
-Each computational item stores a `check` block holding the expression and input
-values that produce its answer. `tools/verify_answers.py` evaluates the
-expression and compares against the hand-written `target`.
+Each computational item stores a `check` block holding the expression and inputs
+that produce its answer. `tools/verify_answers.py` evaluates it and compares
+against the hand-written `target`.
 
-The honest description of what this buys: the two paths are not independent,
-since one author wrote both, so a conceptual error in the formula appears in both
-and passes. What it does catch is transcription slips, unit-prefix mistakes and
-arithmetic errors, which are the errors most likely to occur when writing sixty
-answers by hand. On its first run it caught one: a bit-field extraction whose
-hand-computed answer was `0x3C` where the correct value is `0x3D`.
+What this buys: the two paths are not independent, since one author wrote both,
+so a conceptual error in a formula appears in both and passes. It catches
+transcription slips, unit-prefix mistakes and arithmetic errors, which are the
+errors most likely when writing sixty answers by hand. On its first run it caught
+one: a bit-field extraction hand-computed as `0x3C` where the value is `0x3D`.
 
-Six items are `choice` type and carry no check block, since there is no formula
-to recompute. Those depend entirely on review.
+Six `choice` items carry no check block, since there is no formula to recompute.
+Those depend entirely on review, and the `rename` assertion also exempts them, so
+they carry no automated check of any kind.
 
 ## Scoring design
 
-Grading is deterministic, with no grader model. This was a deliberate trade.
-A model-graded scorer would accept a wider range of response formats, at the cost
-of making scores depend on the grader's own behaviour and on the grader's
-version, and of requiring credentials to reproduce a number. For an item set
-whose answers are integers, physical quantities and short fixed strings, parsing
-is sufficient and reproducibility is worth more than format flexibility.
+Grading is deterministic, with no grader model. A model-graded scorer would
+accept a wider range of response formats, at the cost of making scores depend on
+the grader's behaviour and version, and of requiring credentials to reproduce a
+number. For answers that are integers, physical quantities and short fixed
+strings, parsing is sufficient.
 
-The cost is real and shows up in `no_answer_rate`: a model that reasons correctly
-but ignores the `ANSWER:` convention scores zero on that item. Reporting the rate
-separately means a reader can tell the two apart, and a high rate is a signal to
-revisit the prompt rather than to conclude anything about capability.
+The cost shows up in `no_answer_rate`: a model that reasons correctly but ignores
+the `ANSWER:` convention scores zero on that item. Reporting the rate separately
+keeps the two distinguishable, and a high rate is a signal to revisit the prompt
+rather than a conclusion about capability.
 
 ## Metric definitions
 
@@ -110,34 +106,30 @@ Let `A(v)` be accuracy over the items of variant `v`.
 - `rename_delta = 100 x (A(base) - A(rename))`
 - `renumber_delta = 100 x (A(base) - A(renumber))`
 
-Positive values mean the perturbed variant scored worse. Both can be negative,
-and a small negative value on 20 families is noise rather than evidence that a
-rewrite helped.
+Positive means the perturbed variant scored worse. Both can be negative, and a
+small negative value over 20 families is noise.
 
 Paired consistency is the fraction of families where the `base` item and the
-compared item receive the same grade, both correct or both incorrect. It is
-strictly more informative than the delta: any model whose consistency is below 1
-has families it gets right one way and wrong the other, and a delta near zero
-with low consistency means the score is stable only in aggregate.
+compared item receive the same grade. It is strictly more informative than the
+delta: a model whose consistency is below 1 has families it gets right one way
+and wrong the other, and a delta near zero with low consistency means the score
+is stable only in aggregate.
 
 ## What a reader should not conclude
 
-- Not a capability ranking. 60 items with one perturbation each gives standard
-  errors too wide to separate models that are close.
-- Not a contamination measurement. See the `renumber` discussion above.
-- Not a claim about firmware engineering ability in general. The items are
-  closed-form calculations with single correct answers, which is a narrow slice
-  of the work.
+- **Not a capability ranking.** 60 items with one perturbation each gives
+  standard errors too wide to separate close models.
+- **Not a contamination measurement.** See the `renumber` discussion above.
+- **Not a claim about firmware engineering ability.** The items are closed-form
+  calculations with single correct answers, a narrow slice of the work.
 
-## What I would do next, with more time
+## Next steps
 
-1. Several perturbations per family rather than one, so robustness is a
-   distribution with a reportable variance instead of a single difference.
-2. A second domain reviewer, to catch a consistent misconception that one author
+1. Several perturbations per family, so robustness has a reportable variance
+   rather than a single difference.
+2. A second domain reviewer, to catch a consistent misconception one author
    cannot see in their own items.
-3. Harder items that require multiple steps, once the current set establishes a
-   floor. The present set is deliberately calibrated to be solvable, which
-   limits its power to separate strong models.
+3. Harder multi-step items, once the current set establishes a floor.
 4. Difficulty calibrated against measured performance rather than self-labelled.
-5. A distractor variant that adds irrelevant but plausible datasheet detail, to
-   test whether accuracy survives information that has to be ignored.
+5. A distractor variant adding irrelevant but plausible datasheet detail, to test
+   whether accuracy survives information that has to be ignored.
