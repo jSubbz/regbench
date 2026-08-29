@@ -1,5 +1,7 @@
 # regbench
 
+[![CI](https://github.com/jSubbz/regbench/actions/workflows/ci.yml/badge.svg)](https://github.com/jSubbz/regbench/actions/workflows/ci.yml)
+
 A small benchmark for register-level embedded systems reasoning, implemented with
 [Inspect](https://inspect.aisi.org.uk/). Every question exists in three paired
 forms, so a run reports not only how often a model is right but how much of that
@@ -93,7 +95,7 @@ this script found a genuine error in a hand-computed bit-field answer.
 ## Running it
 
 ```bash
-git clone https://github.com/<user>/regbench && cd regbench
+git clone https://github.com/jSubbz/regbench && cd regbench
 python -m venv .venv && source .venv/bin/activate
 pip install -e ".[dev]"
 ```
