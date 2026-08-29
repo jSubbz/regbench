@@ -152,8 +152,9 @@ The embedded content comes from two years of computer engineering technology
 coursework and a capstone build; the evaluation methodology is newer to me than
 the subject matter. Design decisions are in `docs/METHODOLOGY.md`.
 
-No model results are published here. The repository ships the item set, the
-harness and the metrics; running it against a provider needs your own key.
+Results from two runs against `claude-sonnet-5` are in `docs/RESULTS.md`,
+including an item defect the first run exposed and the controlled re-run that
+resolved it.
 
 ## Licence
 
