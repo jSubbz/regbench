@@ -22,6 +22,7 @@ DEFAULT_DATASET = ROOT / "data" / "items.jsonl"
 DEFAULT_OUTPUT = ROOT / "docs" / "REVIEW_CHECKLIST.md"
 
 CHECKS = ("Correct", "Unambiguous", "Rename holds", "Renumber holds")
+VARIANT_ORDER = ("base", "rename", "renumber")
 TICKED, UNTICKED = "✓", ""
 
 PREAMBLE = """# Item review checklist
@@ -40,6 +41,17 @@ Four checks per family:
 check block. It cannot judge whether a formula is the right formula or whether a
 question is ambiguous. Families marked **manual** have no recomputed answer key,
 so their answers rest on this review.
+
+Each family below shows all three variants with their answers, so every check can
+be made from this file alone.
+
+- **Correct**: does the stated reasoning produce the base answer?
+- **Unambiguous**: could another reading give a different defensible answer? Is
+  every convention that could differ stated in the question?
+- **Rename holds**: read the rename against the base. Same question underneath?
+  (The answers are asserted identical by the test suite, so what you are judging
+  is whether the rewrite changed what is being asked.)
+- **Renumber holds**: same structure, new inputs, answer recomputed correctly?
 
 Tick the boxes under each family, then rerun `tools/build_checklist.py` to update
 the summary table. Ticks survive regeneration; `--reset` clears them.
@@ -80,7 +92,6 @@ def build(items: list[dict], state: dict[str, set[str]]) -> str:
 
     for family, variants in families.items():
         base = variants["base"]
-        renumber = variants.get("renumber")
         ticked = state.get(family, set())
         check = "auto" if base.get("check") else "**manual**"
 
@@ -92,10 +103,17 @@ def build(items: list[dict], state: dict[str, set[str]]) -> str:
         unit = f" {base['unit']}" if base["unit"] else ""
         sections.append(f"\n### {family}\n")
         sections.append(f"{base['domain']}, {base['difficulty']}, {check}\n")
-        sections.append(f"\n> {base['question']}\n")
-        sections.append(f"\nAnswer `{base['target']}`{unit}. {base['rationale']}\n")
-        if renumber:
-            sections.append(f"\nRenumber answer `{renumber['target']}`.\n")
+
+        # All three variants, so every check can be made without opening the JSONL.
+        for variant in VARIANT_ORDER:
+            item = variants.get(variant)
+            if item is None:
+                continue
+            item_unit = f" {item['unit']}" if item["unit"] else ""
+            sections.append(f"\n**{variant}** -> `{item['target']}`{item_unit}\n")
+            sections.append(f"\n> {item['question']}\n")
+
+        sections.append(f"\nWhy `{base['target']}`{unit}: {base['rationale']}\n")
         sections.append(
             "\n"
             + "\n".join(f"- [{'x' if name in ticked else ' '}] {name}" for name in CHECKS)
