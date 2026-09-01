@@ -29,7 +29,7 @@ be made from this file alone.
 Tick the boxes under each family, then rerun `tools/build_checklist.py` to update
 the summary table. Ticks survive regeneration; `--reset` clears them.
 
-**20 of 26 families reviewed.**
+**26 of 26 families reviewed.**
 
 | Family | Domain | Check | Correct | Unambiguous | Rename | Renumber |
 | --- | --- | --- | :-: | :-: | :-: | :-: |
@@ -53,12 +53,12 @@ the summary table. Ticks survive regeneration; `--reset` clears them.
 | [`rtos-rm-bound`](#rtos-rm-bound) | rtos | auto | ✓ | ✓ | ✓ | ✓ |
 | [`qnx-ipc`](#qnx-ipc) | rtos | **manual** | ✓ | ✓ | ✓ | ✓ |
 | [`timer-tick`](#timer-tick) | timers | auto | ✓ | ✓ | ✓ | ✓ |
-| [`c-promotion`](#c-promotion) | c-source | auto |  |  |  |  |
-| [`c-w1c`](#c-w1c) | c-source | auto |  |  |  |  |
-| [`c-signext`](#c-signext) | c-source | auto |  |  |  |  |
-| [`c-fixedpoint`](#c-fixedpoint) | c-source | auto |  |  |  |  |
-| [`c-padding`](#c-padding) | c-source | **manual** |  |  |  |  |
-| [`c-wraparound`](#c-wraparound) | c-source | auto |  |  |  |  |
+| [`c-promotion`](#c-promotion) | c-source | auto | ✓ | ✓ | ✓ | ✓ |
+| [`c-w1c`](#c-w1c) | c-source | auto | ✓ | ✓ | ✓ | ✓ |
+| [`c-signext`](#c-signext) | c-source | auto | ✓ | ✓ | ✓ | ✓ |
+| [`c-fixedpoint`](#c-fixedpoint) | c-source | auto | ✓ | ✓ | ✓ | ✓ |
+| [`c-padding`](#c-padding) | c-source | **manual** | ✓ | ✓ | ✓ | ✓ |
+| [`c-wraparound`](#c-wraparound) | c-source | auto | ✓ | ✓ | ✓ | ✓ |
 
 ## Families
 
@@ -528,10 +528,10 @@ c-source, hard, auto
 
 Why `0xFFFFFFF0`: `flags` undergoes integer promotion to `int` before `~` is applied, so the operand is 0x0000000F and the result is 0xFFFFFFF0, not the 0xF0 that an 8-bit complement would give. Assigning to uint32_t preserves all 32 bits.
 
-- [ ] Correct
-- [ ] Unambiguous
-- [ ] Rename holds
-- [ ] Renumber holds
+- [x] Correct
+- [x] Unambiguous
+- [x] Rename holds
+- [x] Renumber holds
 
 ### c-w1c
 c-source, hard, auto
@@ -562,10 +562,10 @@ What does `STATUS` read afterwards? Give the answer in hexadecimal.
 
 Why `0x00`: `|=` is a read-modify-write. It reads 0x6A, ORs in bit 1 (already set) and writes 0x6A back. Under write-1-to-clear every bit written as 1 is cleared, so all four set bits clear at once and the register reads 0x00. This is the classic read-modify-write bug on a W1C register.
 
-- [ ] Correct
-- [ ] Unambiguous
-- [ ] Rename holds
-- [ ] Renumber holds
+- [x] Correct
+- [x] Unambiguous
+- [x] Rename holds
+- [x] Renumber holds
 
 ### c-signext
 c-source, hard, auto
@@ -584,10 +584,10 @@ c-source, hard, auto
 
 Why `-198`: The 12-bit field is 0xF3A = 3898. Bit 11 is set, so the value is negative: 3898 - 4096 = -198.
 
-- [ ] Correct
-- [ ] Unambiguous
-- [ ] Rename holds
-- [ ] Renumber holds
+- [x] Correct
+- [x] Unambiguous
+- [x] Rename holds
+- [x] Renumber holds
 
 ### c-fixedpoint
 c-source, hard, auto
@@ -624,10 +624,10 @@ What is `r`? Give the answer in hexadecimal.
 
 Why `0x1000`: In Q15, 0x4000 is 0.5 and 0x2000 is 0.25. The 32-bit product is 0x08000000, and shifting right by 15 requantises to Q15: 0x1000, which is 0.125.
 
-- [ ] Correct
-- [ ] Unambiguous
-- [ ] Rename holds
-- [ ] Renumber holds
+- [x] Correct
+- [x] Unambiguous
+- [x] Rename holds
+- [x] Renumber holds
 
 ### c-padding
 c-source, hard, **manual**
@@ -672,10 +672,10 @@ What is `sizeof(struct frame)`? Give the answer as a decimal integer.
 
 Why `12`: `id` at offset 0, three bytes of padding so `timestamp` lands on a 4-byte boundary at offset 4, `flags` at 8, one byte of padding so `crc` is 2-byte aligned at 10. That reaches 12, which is already a multiple of the struct's 4-byte alignment, so no tail padding is added. Verified by compilation during authoring.
 
-- [ ] Correct
-- [ ] Unambiguous
-- [ ] Rename holds
-- [ ] Renumber holds
+- [x] Correct
+- [x] Unambiguous
+- [x] Rename holds
+- [x] Renumber holds
 
 ### c-wraparound
 c-source, hard, auto
@@ -706,7 +706,7 @@ How many timer ticks elapsed? Give the answer as a decimal integer.
 
 Why `320`: Unsigned 16-bit subtraction wraps modulo 65536, which gives the correct elapsed count across a single wrap without any conditional: 0x0040 - 0xFF00 = 320 ticks.
 
-- [ ] Correct
-- [ ] Unambiguous
-- [ ] Rename holds
-- [ ] Renumber holds
+- [x] Correct
+- [x] Unambiguous
+- [x] Rename holds
+- [x] Renumber holds

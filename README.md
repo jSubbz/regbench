@@ -157,6 +157,29 @@ procedure for adding a family of items.
   fix and is not implemented here.
 - **Difficulty is self-labelled**, not calibrated against measured performance.
 
+## How this went
+
+I built this to measure whether a model's answers survive rewording and
+renumbering. It has not measured that yet, and the reason is worth stating
+plainly: a strong model answers the first twenty families correctly every time,
+and a metric with no variance cannot carry information.
+
+What the benchmark did find, four times over, was defects in itself. An item
+whose wording collided with a definition in Freescale's own documentation. A
+scorer that rejected a correct answer written in bare hexadecimal. A sampling
+fluctuation that dissolved once it was run more times. And one item that
+discriminates for a reason other than the one on its label.
+
+That last one took three controlled probes to pin down. The short version is
+that the model understands the hardware semantics the item was built around and
+cannot reliably assemble eight bits into a byte, which are different problems
+with different fixes. The long version, with the numbers, is in
+`docs/RESULTS.md`.
+
+None of this is what I set out to measure. It is what the instrument was
+actually able to see, and telling those two apart turned out to be most of the
+work.
+
 ## Scope
 
 Built in about a week as a self-directed project, and my first using Inspect.

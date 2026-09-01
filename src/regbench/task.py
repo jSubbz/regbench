@@ -41,6 +41,7 @@ def regbench(
     dataset: str | Path = DEFAULT_DATASET,
     domains: str | list[str] | None = None,
     variants: str | list[str] | None = None,
+    families: str | list[str] | None = None,
 ) -> Task:
     """Register-level embedded systems reasoning, scored across paired perturbations.
 
@@ -48,6 +49,7 @@ def regbench(
         dataset: Path to the JSONL item file.
         domains: Domains to keep, as a comma-separated string or a list.
         variants: Variants to keep, as a comma-separated string or a list.
+        families: Families to keep, as a comma-separated string or a list.
 
     Returns:
         The configured Inspect task.
@@ -57,6 +59,7 @@ def regbench(
             dataset,
             domains=_as_list(domains),
             variants=_as_list(variants),
+            families=_as_list(families),
         ),
         solver=[system_message(SYSTEM_PROMPT), generate()],
         scorer=answer_match(),

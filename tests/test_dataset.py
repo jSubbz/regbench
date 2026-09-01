@@ -177,3 +177,14 @@ class TestTaskFilterArguments:
 
         built = regbench(variants=["base", "renumber"])
         assert {sample.metadata["variant"] for sample in built.dataset} == {"base", "renumber"}
+
+
+def test_family_filter():
+    dataset = regbench_dataset(families=["i2c-addr"])
+    assert len(dataset) == len(VARIANTS)
+    assert all(s.metadata["family"] == "i2c-addr" for s in dataset)
+
+
+def test_family_filter_accepts_several():
+    dataset = regbench_dataset(families=["i2c-addr", "spi-mode"])
+    assert {s.metadata["family"] for s in dataset} == {"i2c-addr", "spi-mode"}

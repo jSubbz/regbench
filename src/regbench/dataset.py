@@ -75,6 +75,7 @@ def regbench_dataset(
     *,
     domains: list[str] | None = None,
     variants: list[str] | None = None,
+    families: list[str] | None = None,
 ) -> MemoryDataset:
     """Build the benchmark dataset, optionally restricted to domains or variants.
 
@@ -82,6 +83,7 @@ def regbench_dataset(
         path: Location of the JSONL item file.
         domains: If given, keep only items whose domain appears in this list.
         variants: If given, keep only items whose variant appears in this list.
+        families: If given, keep only items whose family appears in this list.
 
     Returns:
         A MemoryDataset of scored samples.
@@ -91,6 +93,8 @@ def regbench_dataset(
         records = [r for r in records if r["domain"] in domains]
     if variants is not None:
         records = [r for r in records if r["variant"] in variants]
+    if families is not None:
+        records = [r for r in records if r["family"] in families]
     return MemoryDataset(
         samples=[record_to_sample(r) for r in records],
         name="regbench",

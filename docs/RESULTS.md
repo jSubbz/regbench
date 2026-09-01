@@ -21,7 +21,7 @@ C-source families added, taking the set to 26 families and 78 items. Conclusion:
 five of the six hard families saturate as well. One, `c-w1c`, has measurable
 variance. A controlled probe showed it measures bit-level bookkeeping rather than
 the construct it is named for: asked the same question with no byte to assemble,
-the model was correct 45 out of 45.
+the model was correct 105 out of 105.
 
 **Stage 1's conclusions are not retracted.** They remain accurate for the 20
 families they describe, and stage 2 did not contradict them. What changed is
@@ -153,36 +153,36 @@ on the `renumber` variant.
 `data/probes/w1c-isolation.jsonl` holds three arms carrying the same trap with
 decreasing bookkeeping load. All three use hexadecimal notation.
 
-| Arm | Bits set | Answer requires | Failures |
-| --- | --- | --- | --- |
-| `w1c-yesno` | 4 | nothing but the concept: "is bit 1 still set?" | **0/45** |
-| `w1c-minimal` | 2 | track 2 bits, assemble a byte | **1/45** |
-| `w1c-control` | 4 | track 8 bits, assemble a byte | **5/45** |
+| Arm | Bits set | Answer requires |
+| --- | --- | --- |
+| `w1c-yesno` | 4 | nothing but the concept: "is bit 1 still set?" |
+| `w1c-minimal` | 2 | track 2 bits, assemble a byte |
+| `w1c-control` | 4 | track 8 bits, assemble a byte |
 
-Pooled with the notation probes:
+Pooled across both isolation runs and the notation probes:
 
-| Condition | Rate |
-| --- | --- |
-| Concept only, no byte to assemble | 0/45 (0.00%) |
-| Two bits set, byte assembled | 1/45 (2.22%) |
-| Four bits set, byte assembled, hexadecimal | 8/135 (5.93%) |
-| Four bits set, byte assembled, binary literal | 11/80 (13.75%) |
+| Condition | Failures | Rate |
+| --- | --- | --- |
+| Concept only, no byte to assemble | 0/105 | **0.00%** |
+| Two bits set, byte assembled | 1/45 | 2.22% |
+| Four bits set, byte assembled, hexadecimal | 13/195 | 6.67% |
+| Four bits set, byte assembled, binary literal | 11/80 | **13.75%** |
 
 Fisher's exact, one-tailed:
 
-- binary against concept-only: **p = 0.006**
+- binary against concept-only: **p = 0.00007**
+- hexadecimal against concept-only: **p = 0.003** (two-tailed 0.005)
 - binary against hexadecimal: **p = 0.046**
-- hexadecimal against concept-only: p = 0.095
 
 **The concept is intact.** Asked directly whether bit 1 survives - the exact
-counterintuitive consequence of the trap - the model was correct 45 times out of
-45. Failure rate rises monotonically with how much bit-level bookkeeping the
-answer format demands, from 0% to 13.75%, and every step of that rise is about
+counterintuitive consequence of the trap - the model was correct 105 times out of
+105. Failure rate then rises monotonically with how much bit-level bookkeeping the
+answer format demands, from 0% to 13.75%, and every step of that rise concerns
 representation rather than semantics.
 
-The two strongest comparisons are significant. Isolating byte assembly alone
-(hexadecimal against concept-only, p = 0.095) is suggestive rather than
-established, and is reported as such.
+Every comparison in that ladder is significant. Byte assembly alone, holding
+notation constant, accounts for a rise from 0% to 6.67%; binary notation roughly
+doubles it again.
 
 The single `w1c-minimal` failure is the clearest illustration in the whole set.
 The model wrote:
@@ -205,7 +205,7 @@ since has been arithmetic, transcription, or serialisation.
 `c-w1c` does not measure what it was designed to measure, and this is now
 established by experiment rather than inferred from reading transcripts. It was
 built to test whether a model understands write-1-to-clear semantics. Asked that
-question with no byte to assemble, the model is correct 45 out of 45. The item's
+question with no byte to assemble, the model is correct 105 out of 105. The item's
 failures come from bit-level bookkeeping: reading a literal, performing a mask,
 and assembling derived bits into a byte. Binary notation roughly doubles the rate
 again without being its cause.
