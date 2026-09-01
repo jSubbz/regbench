@@ -19,8 +19,9 @@ Three apparent signals appeared and all three were defects in the instrument.
 **Stage 2 - 2026-09-01, commits `575c15b` through `3a5b342`.** Six harder
 C-source families added, taking the set to 26 families and 78 items. Conclusion:
 five of the six hard families saturate as well. One, `c-w1c`, has measurable
-variance, and investigation showed it measures bit-level bookkeeping rather than
-the construct it is named for.
+variance. A controlled probe showed it measures bit-level bookkeeping rather than
+the construct it is named for: asked the same question with no byte to assemble,
+the model was correct 45 out of 45.
 
 **Stage 1's conclusions are not retracted.** They remain accurate for the 20
 families they describe, and stage 2 did not contradict them. What changed is
@@ -147,17 +148,72 @@ hexadecimal cuts the error rate by roughly two thirds, which is a real effect at
 this sample size. It does not remove it: the hex arm still fails 3.75%, entirely
 on the `renumber` variant.
 
+## The isolation probe: separating the concept from the bookkeeping
+
+`data/probes/w1c-isolation.jsonl` holds three arms carrying the same trap with
+decreasing bookkeeping load. All three use hexadecimal notation.
+
+| Arm | Bits set | Answer requires | Failures |
+| --- | --- | --- | --- |
+| `w1c-yesno` | 4 | nothing but the concept: "is bit 1 still set?" | **0/45** |
+| `w1c-minimal` | 2 | track 2 bits, assemble a byte | **1/45** |
+| `w1c-control` | 4 | track 8 bits, assemble a byte | **5/45** |
+
+Pooled with the notation probes:
+
+| Condition | Rate |
+| --- | --- |
+| Concept only, no byte to assemble | 0/45 (0.00%) |
+| Two bits set, byte assembled | 1/45 (2.22%) |
+| Four bits set, byte assembled, hexadecimal | 8/135 (5.93%) |
+| Four bits set, byte assembled, binary literal | 11/80 (13.75%) |
+
+Fisher's exact, one-tailed:
+
+- binary against concept-only: **p = 0.006**
+- binary against hexadecimal: **p = 0.046**
+- hexadecimal against concept-only: p = 0.095
+
+**The concept is intact.** Asked directly whether bit 1 survives - the exact
+counterintuitive consequence of the trap - the model was correct 45 times out of
+45. Failure rate rises monotonically with how much bit-level bookkeeping the
+answer format demands, from 0% to 13.75%, and every step of that rise is about
+representation rather than semantics.
+
+The two strongest comparisons are significant. Isolating byte assembly alone
+(hexadecimal against concept-only, p = 0.095) is suggestive rather than
+established, and is reported as such.
+
+The single `w1c-minimal` failure is the clearest illustration in the whole set.
+The model wrote:
+
+> "STATUS (read) = 0x05 = 0000 0101, Mask = 0xFB = 1111 1011, AND result =
+> 0000 0101 = 0x05"
+
+`0x05 & 0xFB` is `0x01`, not `0x05`. It then applied write-1-to-clear correctly to
+its own incorrect intermediate value. A two-bit AND, wrong, inside otherwise sound
+hardware reasoning.
+
+Across every probe, no failure examined was a misunderstanding of write-1-to-clear.
+One transcript in thirty showed the intended conceptual error early on; everything
+since has been arithmetic, transcription, or serialisation.
+
 ## What this says about the item
 
-`c-w1c` does not measure what it was designed to measure. It was built to test
-whether a model understands write-1-to-clear semantics. The transcripts show that
-understanding is present and articulate, and that the failures come from bit-level
-bookkeeping: reading an 8-bit literal, and assembling eight derived bits into a
-byte. Binary notation roughly quadruples the error rate without being its cause.
+
+
+`c-w1c` does not measure what it was designed to measure, and this is now
+established by experiment rather than inferred from reading transcripts. It was
+built to test whether a model understands write-1-to-clear semantics. Asked that
+question with no byte to assemble, the model is correct 45 out of 45. The item's
+failures come from bit-level bookkeeping: reading a literal, performing a mask,
+and assembling derived bits into a byte. Binary notation roughly doubles the rate
+again without being its cause.
 
 That is a construct-validity failure, and it is the substantive result here. An
 item that discriminates is not automatically an item that measures the construct
-it names.
+it names, and the only way to tell the difference is to build the controlled
+comparison and run it.
 
 It is not a harmless failure mode in practice. A model that explains a register
 trap correctly and then reports the wrong byte is more dangerous than one that is
