@@ -22,11 +22,23 @@ arguments. Commits are as recorded by Inspect in each log. Run A's working tree
 was modified at run time; the uncommitted changes were to module import handling
 and to tests, so the item content matched `412f556`.
 
-`claude-sonnet-5` does not accept a `temperature` parameter and runs with
-adaptive thinking, so no run is deterministic and none can be pinned to a
-sampling configuration. Multiple epochs were used for that reason: a single draw
-cannot distinguish a stable answer from an unstable one. Reasoning content is
-returned encrypted and was not available for inspection.
+None of the four runs above sent a `temperature` parameter; the
+`model_generate_config` recorded in each of their logs is empty. An earlier
+3-sample plumbing check at commit `412f556`, 16:07 UTC, did pass
+`--temperature 0`, and its log header records `temperature: 0.0` accordingly.
+That run produced the provider warning:
+
+    anthropic model 'claude-sonnet-5' does not support the 'temperature'
+    parameter (adaptive thinking only)
+
+which is the evidence for the claim that this model cannot be pinned to a
+sampling configuration. The flag was dropped from every subsequent run rather
+than sent and silently ignored.
+
+Sampling is therefore uncontrolled and no run is deterministic. Multiple epochs
+were used for that reason: a single draw cannot distinguish a stable answer from
+an unstable one. Reasoning content is returned encrypted and was not available
+for inspection.
 
 ## Metrics
 
