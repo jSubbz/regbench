@@ -1,155 +1,193 @@
 # Results
 
-Three full runs against `claude-sonnet-5`, plus one targeted probe. Runs B and C
-each exist to test a hypothesis raised by the run before it, so they are reported
-together rather than as independent measurements.
+Runs against `claude-sonnet-5`. Later runs exist to test hypotheses raised by
+earlier ones, so they are reported as a sequence rather than as independent
+measurements. Predictions for the hard tier were registered in
+`docs/PREDICTIONS.md` and committed before the first run against it.
+
+## Stages, and what was claimed when
+
+This work was done in two stages, and the repository has been extended since the
+first stage's conclusions were written. Anyone arriving here from material dated
+before 2026-09-01 is reading a superset of what that material described.
+
+**Stage 1 - 2026-08-29, commits `412f556` through `16e1ef2`.** 20 families, 60
+items, easy and medium tiers only. Conclusion: no robustness gap was detected,
+and the item set saturates, so the perturbation deltas cannot carry information.
+Three apparent signals appeared and all three were defects in the instrument.
+
+**Stage 2 - 2026-09-01, commits `575c15b` through `3a5b342`.** Six harder
+C-source families added, taking the set to 26 families and 78 items. Conclusion:
+five of the six hard families saturate as well. One, `c-w1c`, has measurable
+variance, and investigation showed it measures bit-level bookkeeping rather than
+the construct it is named for.
+
+**Stage 1's conclusions are not retracted.** They remain accurate for the 20
+families they describe, and stage 2 did not contradict them. What changed is
+scope: a harder tier was added, and it produced a finding stage 1 could not have
+produced because it had no items with variance.
+
+Applications and other external material submitted before 2026-09-01 referenced
+stage 1 only. This note exists so that a reader coming from one of those does not
+have to reconstruct which conclusions existed when.
 
 ## Runs
+
+### 2026-08-29, easy and medium tiers only (60 items, 20 families)
 
 | | A | B | C | GPIO probe |
 | --- | --- | --- | --- | --- |
 | Commit | `412f556` | `df7a282` | `16e1ef2` | `16e1ef2` |
 | Working tree | modified | clean | clean | clean |
-| Time (UTC) | 16:13 | 16:32 | 16:59 | 17:03 |
-| Scope | all 60 items | all 60 | all 60 | 6 gpio items |
-| Epochs | 3 | 3 | 3 | 10 |
 | Samples | 180 | 180 | 180 | 60 |
-| Tokens in / out | 31,872 / 14,939 | 31,911 / 17,204 | 31,947 / 15,046 | 11,470 / 5,446 |
-| Wall time | 18 s | 19 s | 15 s | 7 s |
+| accuracy | 0.989 | 1.000 | 0.994 | 1.000 |
+| rename_delta | 3.33 | 0.00 | 1.67 | 0.00 |
+| renumber_delta | 0.00 | 0.00 | 0.00 | 0.00 |
 
-All runs used `anthropic/claude-sonnet-5` (created 2026-06-29) with no model
-arguments. Commits are as recorded by Inspect in each log. Run A's working tree
-was modified at run time; the uncommitted changes were to module import handling
-and to tests, so the item content matched `412f556`.
+### 2026-09-01, with the hard tier added (78 items, 26 families)
 
-None of the four runs above sent a `temperature` parameter; the
-`model_generate_config` recorded in each of their logs is empty. An earlier
-3-sample plumbing check at commit `412f556`, 16:07 UTC, did pass
-`--temperature 0`, and its log header records `temperature: 0.0` accordingly.
-That run produced the provider warning:
+| | D | E | C-probe | Notation probe 1 | Notation probe 2 |
+| --- | --- | --- | --- | --- | --- |
+| Commit | `575c15b` | `3a5b342` | `3a5b342` | `3a5b342` | `3a5b342` |
+| Samples | 234 | 234 | 180 | 60 | 120 |
+| Scope | all | all | `c-source` | w1c notation | w1c notation |
+| Epochs | 3 | 3 | 10 | 10 | 30 |
+| accuracy | 0.996 | 0.996 | 0.972 | 0.950 | 0.908 |
+| hard | 1.000 | 0.981 | 0.972 | 0.950 | 0.908 |
+
+The two notation probes ran against `data/probes/w1c-notation.jsonl` and are not
+part of the item set. The last two runs record a modified working tree; the
+uncommitted changes were harness fixes described below, not item content.
+
+`claude-sonnet-5` does not accept a `temperature` parameter and runs with
+adaptive thinking. None of the runs above sent one; an earlier 3-sample check at
+`412f556` did, and the provider returned:
 
     anthropic model 'claude-sonnet-5' does not support the 'temperature'
     parameter (adaptive thinking only)
 
-which is the evidence for the claim that this model cannot be pinned to a
-sampling configuration. The flag was dropped from every subsequent run rather
-than sent and silently ignored.
+which is the evidence for the claim that sampling cannot be pinned. Multiple
+epochs were used for that reason.
 
-Sampling is therefore uncontrolled and no run is deterministic. Multiple epochs
-were used for that reason: a single draw cannot distinguish a stable answer from
-an unstable one. Reasoning content is returned encrypted and was not available
-for inspection.
+## The easy and medium tiers saturate
 
-## Metrics
+Base accuracy was 1.000 in every run. Both perturbation deltas are therefore
+structurally incapable of returning anything but zero or noise on those tiers:
+"no robustness gap exists" and "the item set is too easy to reveal one" are
+indistinguishable from that data.
 
-| Metric | A | B | C | GPIO probe |
-| --- | --- | --- | --- | --- |
-| accuracy | 0.989 | 1.000 | 0.994 | 1.000 |
-| stderr | 0.011 | 0.000 | 0.006 | 0.000 |
-| base | 1.000 | 1.000 | 1.000 | 1.000 |
-| rename | 0.967 | 1.000 | 0.983 | 1.000 |
-| renumber | 1.000 | 1.000 | 1.000 | 1.000 |
-| rename_delta | 3.33 | 0.00 | 1.67 | 0.00 |
-| renumber_delta | 0.00 | 0.00 | 0.00 | 0.00 |
-| rename_consistency | 0.950 | 1.000 | 0.950 | 1.000 |
-| renumber_consistency | 1.000 | 1.000 | 1.000 | 1.000 |
-| no_answer_rate | 0.000 | 0.000 | 0.000 | 0.000 |
+Three non-zero deltas appeared on those tiers. All three were the instrument:
 
-Failures: Run A, 2 of 180, both `spi-mode.rename`. Run C, 1 of 180,
-`gpio-rmw.rename`. Runs B and the probe, none.
+| Run | Signal | Cause |
+| --- | --- | --- |
+| A | `rename_delta` 3.33 | An ambiguous item. "First clock edge" collides with Freescale AN3904, which attaches that phrase to CPHA=1. Reworded; the failure did not reproduce in B. |
+| C | `rename_delta` 1.67 | Sampling noise. A 10-epoch probe returned 60/60. |
+| D | `rename_delta` 1.28 | A scorer defect. The model answered `A6` to an item requesting hexadecimal; the parser required an explicit `0x`, tried decimal, and marked a correct answer wrong. |
 
-## Run A to B: an ambiguous item
+Zero model findings on 60 items across four runs.
 
-Run A's only signal was a 3.33 point rename delta resting on two samples. Paired
-consistency of 0.95 localised it to one family out of twenty, the pattern of a
-single defective item rather than a general sensitivity to rewording.
+## The prediction, and a premature call
 
-`spi-mode.base` states CPOL and CPHA directly and was answered correctly in all
-three epochs. The rename asked the same question behaviourally:
+Both predictions ranked `c-w1c` most likely to fail. Run D returned `hard` =
+1.000 and I recorded that as falsifying both. That call was wrong.
 
-> An SPI master idles its clock line high and samples incoming data on the first
-> clock edge of each bit period.
+`c-w1c` contributes 9 samples to a 3-epoch run. At the failure rate later
+measured, roughly 12%, the probability of a clean sweep across 9 samples is
+about 0.30. Run D had power to detect a near-certain failure, not a one-in-eight
+one. Treating a null result from an underpowered measurement as a falsification
+is the same error the rest of this document is about.
 
-Clock idling high is CPOL=1; sampling on the first edge is CPHA=0; mode 2. The
-model answered 3 in two epochs and 2 in the third.
+Run E, at the same three epochs, produced one `c-w1c` failure. The 10-epoch probe
+produced five, all in `c-w1c`, with the other five C families at 150/150.
 
-That wording matches the standard definition of CPHA, usually given as "data are
-sampled on the leading (first) clock edge". But Freescale AN3904 defines CPHA on
-a different axis and attaches the same phrase to the opposite value: CPHA=1 is
-"data transfer starts with the first edge of SCK", describing when a transfer
-begins rather than which edge samples. A reader carrying that framing has a
-defensible route from "first clock edge" to mode 3.
+## c-w1c: what actually fails
 
-The item was reworded to remove the collision, keeping the answer at 2 and the
-question behavioural:
+Pooled across every run, `c-w1c` in its original binary notation fails **11 of 80
+base and renumber samples, 13.75%**. Every other family in the set, easy or hard,
+is perfect.
 
-> An SPI master idles its clock line high and captures each incoming data bit on
-> the first of the two clock edges in that bit's period, rather than the second.
+Reading the failing transcripts, the concept is not what breaks. From a failing
+hex-notation sample, the model produced a complete and entirely correct bit table,
+then added:
 
-Run B re-ran the otherwise unchanged benchmark. The failure did not reproduce.
+> "Note the irony: the firmware intended to clear bit 1, but because bit1 was
+> already 0 in the *value written* (0x68 has bit1=0), the write-1-to-clear
+> hardware doesn't touch bit 1. Meanwhile bits 6 and 3 (which were 1 in the
+> written value) get cleared unintentionally."
 
-**The Run A rename delta was an artifact of item wording, not a property of the
-model.** Run A should not be cited as evidence of surface-form sensitivity.
+That is a correct and complete account of the trap the item was built around. Its
+own table gives `0000 0010`. It then reported `0001 0010 = 0x12`, contradicting
+the table it had just written.
 
-## Run C to the probe: sampling noise
+Two failure mechanisms appear across the transcripts:
 
-Run C followed three further item edits (see the repository history) and produced
-one failure: `gpio-rmw.rename` in one epoch of three, answering `0xD6` where the
-answer is `0xA6`. The base item, with identical numbers, scored 3 of 3.
+1. **Misreading the input.** Asserting bit 4 of `0x6A` is set when it is not,
+   which is equivalent to treating the register as `0x7A`.
+2. **Misassembling the output.** Deriving every bit correctly and then serialising
+   them to the wrong byte, as above.
 
-The wording is not a plausible cause. "Drive bit 1 high and bit 3 low" against
-the base's "set bit 1 and clear bit 3" is standard and unambiguous, and the
-incorrect answer differs from the correct one in bit 6, which the question does
-not mention.
+Neither is a misunderstanding of write-1-to-clear. One transcript in thirty showed
+the intended conceptual error, believing only the OR operand reaches the register.
 
-The GPIO families were re-run alone at 10 epochs: 60 of 60 correct, including 10
-of 10 on `gpio-rmw.rename`. Across Run C and the probe that item stands at 12 of
-13.
+## The notation probe
 
-**Treated as sampling noise.** With no temperature control and adaptive thinking,
-an occasional arithmetic slip is expected, and a targeted re-run is cheap enough
-that guessing was unnecessary.
+`data/probes/w1c-notation.jsonl` holds two families identical in every respect
+except how the register value is written: `0b01101010` against `0x6A`. Same code,
+same semantics, same answers.
 
-## Interpretation
+| Arm | base | renumber | Total |
+| --- | --- | --- | --- |
+| Binary | 5/40 (12.5%) | 6/40 (15.0%) | **11/80 (13.75%)** |
+| Hex | 0/40 (0.0%) | 3/40 (7.5%) | **3/80 (3.75%)** |
 
-**No instance dependence was detected.** `renumber_delta` was 0.00 in every run.
-Every renumbered item was answered correctly, including value combinations
-unlikely to exist in training data as a stored pair. On this item set the model
-performs the calculations rather than recalling them.
+Fisher's exact: one-tailed p = 0.023, two-tailed p = 0.047.
 
-**No surface-form dependence was detected either.** Both non-zero rename deltas
-were explained: one by an ambiguous item, one by sampling noise. Neither survived
-a controlled re-run.
+**Notation matters and does not explain the failures.** Writing the register in
+hexadecimal cuts the error rate by roughly two thirds, which is a real effect at
+this sample size. It does not remove it: the hex arm still fails 3.75%, entirely
+on the `renumber` variant.
 
-**The benchmark is at ceiling and cannot currently detect what it was built to
-detect.** With base accuracy at 100% across three runs, both deltas are
-structurally incapable of returning anything but zero or noise. "No robustness
-gap exists" and "the item set is too easy to reveal one" are indistinguishable
-from this data. These results describe the instrument as much as the model.
+## What this says about the item
 
-**Two false positives, two different causes, both resolved by re-running.** That
-is the part of this worth reproducing at larger scale: a small anomaly, a
-localising metric, a hypothesis about its cause, and a cheap controlled run that
-distinguishes item defect from model behaviour from noise.
+`c-w1c` does not measure what it was designed to measure. It was built to test
+whether a model understands write-1-to-clear semantics. The transcripts show that
+understanding is present and articulate, and that the failures come from bit-level
+bookkeeping: reading an 8-bit literal, and assembling eight derived bits into a
+byte. Binary notation roughly quadruples the error rate without being its cause.
 
-## What would make the next run informative
+That is a construct-validity failure, and it is the substantive result here. An
+item that discriminates is not automatically an item that measures the construct
+it names.
 
-Harder items, so base accuracy sits below ceiling and the deltas have room to
-move. Multi-step calculations, and items presenting C source rather than prose,
-are the obvious increments. A set where a strong model scores 80 to 90 percent
-would let the perturbation metrics measure something; the present set cannot.
+It is not a harmless failure mode in practice. A model that explains a register
+trap correctly and then reports the wrong byte is more dangerous than one that is
+plainly confused, because the reasoning reads as authoritative.
 
-## Reproducing
+## Harness defects found by running it
 
-```bash
-git checkout 16e1ef2
-python3 -m venv .venv && source .venv/bin/activate
-pip install -e ".[dev]" anthropic
-export ANTHROPIC_API_KEY=...
-inspect eval src/regbench/task.py --model anthropic/claude-sonnet-5 --epochs 3
-```
+Three, none affecting the answer key, all affecting what could be measured:
 
-Exact reproduction is not possible. The model does not accept a temperature
-parameter, runs with adaptive thinking, and the alias may resolve to a different
-snapshot over time. Expect variation of roughly the size seen between Runs B and
-C, which differed by one sample out of 180.
+1. **The scorer rejected bare hexadecimal.** `A6` answering an item that asked for
+   hexadecimal was marked wrong. Integer items now declare the base their question
+   requests, and unprefixed digits are read in it.
+2. **Relative `-T dataset=` paths failed.** Inspect runs a task from a working
+   directory of its own, so relative paths did not resolve against the shell's
+   cwd. They now fall back to the project root.
+3. **Comma-separated `-T` arguments crashed.** Inspect parses them into a list;
+   the task called `.split(",")` on the value. Both forms are now accepted.
+
+## Next
+
+- `c-w1c` **keeps its name**. It was designed to test write-1-to-clear semantics,
+  and that is what the record should say it was designed to test. Renaming it now
+  to match what it turned out to measure would present a post-hoc observation as
+  an intent, and would erase the finding that an item can discriminate while
+  measuring something other than its label. The mismatch is documented above and
+  in `docs/METHODOLOGY.md` instead.
+- A separate item isolating write-1-to-clear from bit-level bookkeeping is the
+  constructive fix: same construct, fewer bits to track, built and tested as a new
+  item rather than as a retitling of this one.
+- The easy and medium tiers remain saturated and carry no information about
+  robustness. The hard tier has one item with variance out of six.
+- `c-wraparound` has never failed and was flagged at authoring time as the weakest
+  item. It is the first candidate for replacement.

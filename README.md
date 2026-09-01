@@ -164,9 +164,10 @@ The embedded content comes from two years of computer engineering technology
 coursework and a capstone build; the evaluation methodology is newer to me than
 the subject matter. Design decisions are in `docs/METHODOLOGY.md`.
 
-Results from two runs against `claude-sonnet-5` are in `docs/RESULTS.md`,
-including an item defect the first run exposed and the controlled re-run that
-resolved it.
+Results are in `docs/RESULTS.md`. The work was done in two stages and the
+repository has been extended since the first stage's conclusions were written;
+`RESULTS.md` opens with what was concluded when, so a reader arriving from
+earlier material can tell which claims they are looking at.
 
 ## Licence
 

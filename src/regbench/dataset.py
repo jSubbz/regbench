@@ -13,7 +13,8 @@ from pathlib import Path
 
 from inspect_ai.dataset import MemoryDataset, Sample
 
-DATA_DIR = Path(__file__).resolve().parent.parent.parent / "data"
+PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
+DATA_DIR = PROJECT_ROOT / "data"
 DEFAULT_DATASET = DATA_DIR / "items.jsonl"
 
 VARIANTS = ("base", "rename", "renumber")
@@ -34,9 +35,28 @@ _METADATA_KEYS = (
 )
 
 
+def resolve_dataset_path(path: Path | str) -> Path:
+    """Resolve a dataset path, falling back to one relative to the project root.
+
+    Inspect runs a task with a working directory that is not necessarily the one
+    the command was typed in, so a relative ``-T dataset=`` argument does not
+    resolve against the shell's cwd. Anything relative that is not found as given
+    is retried against the project root, which is what a caller passing
+    ``data/probes/x.jsonl`` from the repository means.
+    """
+    candidate = Path(path)
+    if candidate.is_absolute() or candidate.exists():
+        return candidate
+    from_root = PROJECT_ROOT / candidate
+    if from_root.exists():
+        return from_root
+    # Report the path the caller asked for rather than the rewritten one.
+    return candidate
+
+
 def read_items(path: Path | str = DEFAULT_DATASET) -> list[dict]:
     """Read the raw item records from a JSONL file."""
-    text = Path(path).read_text(encoding="utf-8")
+    text = resolve_dataset_path(path).read_text(encoding="utf-8")
     return [json.loads(line) for line in text.splitlines() if line.strip()]
 
 
@@ -74,5 +94,5 @@ def regbench_dataset(
     return MemoryDataset(
         samples=[record_to_sample(r) for r in records],
         name="regbench",
-        location=str(path),
+        location=str(resolve_dataset_path(path)),
     )

@@ -143,6 +143,23 @@ the `ANSWER:` convention scores zero on that item. Reporting the rate separately
 keeps the two distinguishable, and a high rate is a signal to revisit the prompt
 rather than a conclusion about capability.
 
+## A known construct mismatch
+
+`c-w1c` is named for write-1-to-clear semantics and was written to test them.
+Measurement showed it does not primarily test them: the model articulates the
+semantics correctly and fails on reading an 8-bit literal and on assembling
+derived bits into a byte. See `docs/RESULTS.md` for the transcripts and the
+notation probe.
+
+The item keeps its name. Renaming it to match what it measures would convert a
+post-hoc observation into an apparent design intent and would hide the more
+useful result, which is that discrimination and construct validity are separate
+properties. An item can produce variance for a reason other than the one it
+claims. The fix is a new item, not a new title.
+
+This is recorded here so the mismatch travels with the methodology rather than
+living only in a results file.
+
 ## Metric definitions
 
 Let `A(v)` be accuracy over the items of variant `v`.

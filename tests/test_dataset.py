@@ -123,3 +123,57 @@ def test_domain_filter():
 def test_variant_filter():
     dataset = regbench_dataset(variants=["base"])
     assert len(dataset) == len(FAMILIES)
+
+
+class TestDatasetPathResolution:
+    """Inspect runs tasks from a working directory of its own choosing."""
+
+    def test_relative_path_resolves_against_the_project_root(self, monkeypatch, tmp_path):
+        from regbench.dataset import resolve_dataset_path
+
+        monkeypatch.chdir(tmp_path)
+        resolved = resolve_dataset_path("data/items.jsonl")
+        assert resolved.is_absolute()
+        assert resolved.exists()
+
+    def test_absolute_path_is_returned_unchanged(self):
+        from regbench.dataset import DEFAULT_DATASET, resolve_dataset_path
+
+        assert resolve_dataset_path(DEFAULT_DATASET) == DEFAULT_DATASET
+
+    def test_dataset_loads_from_a_relative_path_off_cwd(self, monkeypatch, tmp_path):
+        from regbench.dataset import regbench_dataset
+
+        monkeypatch.chdir(tmp_path)
+        assert len(regbench_dataset("data/items.jsonl")) > 0
+
+
+class TestTaskFilterArguments:
+    """Inspect hands a -T value through as a string or a list of strings."""
+
+    def test_single_value_string(self):
+        from regbench.task import _as_list
+
+        assert _as_list("base") == ["base"]
+
+    def test_comma_separated_string(self):
+        from regbench.task import _as_list
+
+        assert _as_list("base,renumber") == ["base", "renumber"]
+
+    def test_list_from_inspect(self):
+        from regbench.task import _as_list
+
+        assert _as_list(["base", "renumber"]) == ["base", "renumber"]
+
+    def test_none_and_empty(self):
+        from regbench.task import _as_list
+
+        assert _as_list(None) is None
+        assert _as_list("") is None
+
+    def test_task_accepts_a_list_of_variants(self):
+        from regbench.task import regbench
+
+        built = regbench(variants=["base", "renumber"])
+        assert {sample.metadata["variant"] for sample in built.dataset} == {"base", "renumber"}

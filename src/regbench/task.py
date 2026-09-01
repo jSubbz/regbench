@@ -20,18 +20,34 @@ Give the value in the units and number base the question asks for. Do not add co
 after the ANSWER line."""
 
 
+def _as_list(value: str | list[str] | None) -> list[str] | None:
+    """Normalise a task filter argument to a list of names.
+
+    Inspect parses a comma-separated ``-T`` value into a list but leaves a single
+    value as a string, so a filter argument arrives as either type depending on
+    how many values the caller passed.
+    """
+    if value is None:
+        return None
+    if isinstance(value, str):
+        names = [name.strip() for name in value.split(",")]
+    else:
+        names = [str(name).strip() for name in value]
+    return [name for name in names if name] or None
+
+
 @task
 def regbench(
     dataset: str | Path = DEFAULT_DATASET,
-    domains: str | None = None,
-    variants: str | None = None,
+    domains: str | list[str] | None = None,
+    variants: str | list[str] | None = None,
 ) -> Task:
     """Register-level embedded systems reasoning, scored across paired perturbations.
 
     Args:
         dataset: Path to the JSONL item file.
-        domains: Optional comma-separated list of domains to keep.
-        variants: Optional comma-separated list of variants to keep.
+        domains: Domains to keep, as a comma-separated string or a list.
+        variants: Variants to keep, as a comma-separated string or a list.
 
     Returns:
         The configured Inspect task.
@@ -39,8 +55,8 @@ def regbench(
     return Task(
         dataset=regbench_dataset(
             dataset,
-            domains=domains.split(",") if domains else None,
-            variants=variants.split(",") if variants else None,
+            domains=_as_list(domains),
+            variants=_as_list(variants),
         ),
         solver=[system_message(SYSTEM_PROMPT), generate()],
         scorer=answer_match(),
