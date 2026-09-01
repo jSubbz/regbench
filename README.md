@@ -68,7 +68,10 @@ of instruction following, not of embedded systems reasoning.
 Items declare one of three answer types, each with its own equality rule:
 
 - `integer` - compared by numeric value, so `0x90`, `144` and `0b10010000` are
-  the same answer. Decimal, hex and binary notations are all accepted.
+  the same answer. Explicit notations (`0x`, `0b`, an `h` suffix) are always
+  honoured. Digits with no notation are read in the base the question asked for,
+  which each item declares, so `A6` answering a hexadecimal item is correct and
+  `166` answering it means `0x166`.
 - `quantity` - converted to a base SI unit and compared within a per-item
   relative tolerance, so `1.5 ms`, `1500 us` and `0.0015 s` are the same answer.
   A bare number is read as being in the unit the question asked for.

@@ -28,6 +28,7 @@ _METADATA_KEYS = (
     "answer_type",
     "unit",
     "tolerance",
+    "radix",
     "aliases",
     "rationale",
 )

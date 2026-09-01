@@ -57,6 +57,22 @@ def test_non_quantity_items_declare_no_unit():
             assert item["unit"] is None, f"{item['id']} declares a unit"
 
 
+def test_integer_items_declare_a_radix():
+    for item in ITEMS:
+        if item["answer_type"] == "integer":
+            assert item["radix"] in (2, 10, 16), f"{item['id']} has no usable radix"
+        else:
+            assert item["radix"] is None, f"{item['id']} declares a radix"
+
+
+def test_declared_radix_matches_the_question():
+    for item in ITEMS:
+        if item["answer_type"] != "integer":
+            continue
+        asks_hex = "hexadecimal" in item["question"].lower()
+        assert item["radix"] == (16 if asks_hex else 10), f"{item['id']} radix disagrees"
+
+
 def test_every_item_has_a_rationale():
     for item in ITEMS:
         assert item["rationale"].strip(), f"{item['id']} has no rationale"

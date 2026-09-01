@@ -47,6 +47,7 @@ def answer_match():
             target=target.text,
             unit=metadata.get("unit"),
             tolerance=metadata.get("tolerance") or 0.0,
+            radix=metadata.get("radix") or 10,
             aliases=metadata.get("aliases") or [],
         )
         return Score(

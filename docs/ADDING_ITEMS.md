@@ -106,6 +106,7 @@ Field by field:
 | `target` | The answer as a string, in the unit named in `unit`. |
 | `unit` | The unit the question asks for, on `quantity` items. Must be `null` on the other two types. |
 | `tolerance` | Relative tolerance, on `quantity` items. Must be greater than zero. |
+| `radix` | Base for unprefixed digits, on `integer` items: 16 when the question asks for hexadecimal, 10 otherwise. Must be `null` on the other types, and must agree with the question wording. Both are asserted by tests. |
 | `aliases` | Extra accepted spellings, on `choice` items. |
 | `check` | Formula and inputs, on computational items. `null` for `choice`. |
 | `rationale` | The calculation in prose, for review. |

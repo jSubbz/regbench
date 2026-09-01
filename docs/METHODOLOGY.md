@@ -130,6 +130,14 @@ the grader's behaviour and version, and of requiring credentials to reproduce a
 number. For answers that are integers, physical quantities and short fixed
 strings, parsing is sufficient.
 
+Integer items declare the base their question asks for. Digits with no explicit
+notation are read in that base, so a response of `A6` to an item requesting
+hexadecimal is scored correct. This was added after a run in which the scorer
+rejected exactly that response as an unparsable decimal: the instrument marked a
+correct answer wrong and inflated the rename delta by a full item. The converse
+follows from the same rule, and is deliberate: `166` answering a hexadecimal item
+is read as `0x166` and scored wrong, because the item named the base.
+
 The cost shows up in `no_answer_rate`: a model that reasons correctly but ignores
 the `ANSWER:` convention scores zero on that item. Reporting the rate separately
 keeps the two distinguishable, and a high rate is a signal to revisit the prompt

@@ -66,11 +66,21 @@ def extract_answer(completion: str) -> str | None:
     return matches[-1].strip(_STRIP_CHARS).strip()
 
 
-def parse_integer(text: str) -> int:
-    """Parse an integer written in decimal, hexadecimal or binary notation.
+def parse_integer(text: str, radix: int = 10) -> int:
+    """Parse an integer, interpreting unprefixed digits in ``radix``.
+
+    An explicit notation always wins: ``0x``/``0b`` prefixes and an ``h`` suffix
+    are honoured whatever ``radix`` says. Digits with no notation are read in
+    ``radix``, which is the base the item's question asked for. Without that,
+    a response of ``A6`` to a question requesting hexadecimal would be rejected
+    even though it is correct, and the scorer would mark down a right answer.
+
+    Args:
+        text: The extracted answer.
+        radix: Base for unprefixed digits. 16 for items requesting hexadecimal.
 
     Raises:
-        ParseError: if the text is not a single integer literal.
+        ParseError: if the text is not a single integer literal in that base.
     """
     token = text.strip().replace("_", "").replace(" ", "")
     token = token.removeprefix("+")
@@ -81,16 +91,24 @@ def parse_integer(text: str) -> int:
     try:
         if token.lower().startswith("0x"):
             value = int(token, 16)
-        elif token.lower().startswith("0b"):
+        elif token.lower().startswith("0b") and token[2:] and set(token[2:]) <= {"0", "1"}:
+            # "0B" alone is a hexadecimal digit pair, not an empty binary literal.
             value = int(token, 2)
         elif token.lower().endswith("h"):
             value = int(token[:-1], 16)
-        elif token.lower().endswith("b") and set(token[:-1]) <= {"0", "1"}:
+        elif (
+            radix != 16
+            and token.lower().endswith("b")
+            and set(token[:-1]) <= {"0", "1"}
+            and token[:-1]
+        ):
+            # A trailing "b" means binary only when b is not a valid digit in
+            # the requested base; in hexadecimal it is one.
             value = int(token[:-1], 2)
         else:
-            value = int(token.replace(",", ""), 10)
+            value = int(token.replace(",", ""), radix)
     except ValueError as exc:
-        raise ParseError(f"could not parse integer: {text!r}") from exc
+        raise ParseError(f"could not parse integer in base {radix}: {text!r}") from exc
 
     return -value if negative else value
 
@@ -107,6 +125,7 @@ def compare(
     target: str,
     unit: str | None = None,
     tolerance: float = 0.0,
+    radix: int = 10,
     aliases: list[str] | None = None,
 ) -> Verdict:
     """Compare a model completion against an answer key.
@@ -117,6 +136,7 @@ def compare(
         target: The correct answer, as written in the dataset.
         unit: Canonical unit for ``quantity`` items; the unit the prompt asks for.
         tolerance: Relative tolerance for ``quantity`` items.
+        radix: Base for unprefixed digits on ``integer`` items.
         aliases: Additional accepted spellings for ``choice`` items.
 
     Returns:
@@ -129,10 +149,10 @@ def compare(
 
     if answer_type == "integer":
         try:
-            got = parse_integer(extracted)
+            got = parse_integer(extracted, radix)
         except ParseError as exc:
             return Verdict(False, extracted, str(exc))
-        want = parse_integer(target)
+        want = parse_integer(target, radix)
         return Verdict(got == want, extracted, f"parsed {got}, expected {want}")
 
     if answer_type == "quantity":

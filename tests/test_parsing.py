@@ -49,6 +49,31 @@ class TestParseInteger:
         with pytest.raises(ParseError):
             parse_integer("about seventy")
 
+    @pytest.mark.parametrize(
+        ("text", "radix", "expected"),
+        [
+            ("A6", 16, 166),
+            ("a6", 16, 166),
+            ("0xA6", 16, 166),
+            ("10", 16, 16),
+            ("10", 10, 10),
+            ("0B", 16, 11),
+            ("FFFFFFF0", 16, 0xFFFFFFF0),
+            ("-198", 10, -198),
+        ],
+    )
+    def test_unprefixed_digits_use_the_requested_radix(self, text, radix, expected):
+        assert parse_integer(text, radix) == expected
+
+    def test_explicit_prefix_overrides_the_radix(self):
+        assert parse_integer("0b1010", 10) == 10
+
+    def test_binary_suffix_is_not_applied_in_hexadecimal(self):
+        # "1011b" is a valid hexadecimal literal; the binary-suffix reading
+        # must not win when hexadecimal was requested.
+        assert parse_integer("1011b", 16) == 0x1011B
+        assert parse_integer("1011b", 10) == 11
+
 
 class TestParseQuantity:
     def test_bare_number_takes_the_prompted_unit(self):
@@ -76,6 +101,15 @@ class TestParseQuantity:
 class TestCompare:
     def test_integer_across_bases(self):
         assert compare("ANSWER: 0x90", answer_type="integer", target="144").correct
+
+    def test_bare_hex_is_accepted_when_hex_was_requested(self):
+        # Regression: a response of "A6" to an item asking for hexadecimal is
+        # correct and was previously rejected as an unparsable decimal.
+        assert compare("ANSWER: A6", answer_type="integer", target="0xA6", radix=16).correct
+
+    def test_bare_digits_are_read_in_the_requested_base(self):
+        # "166" answering a hexadecimal item means 0x166, not decimal 166.
+        assert not compare("ANSWER: 166", answer_type="integer", target="0xA6", radix=16).correct
 
     def test_integer_wrong_value(self):
         assert not compare("ANSWER: 0x91", answer_type="integer", target="144").correct
