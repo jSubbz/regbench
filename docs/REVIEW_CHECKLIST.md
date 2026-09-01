@@ -29,7 +29,7 @@ be made from this file alone.
 Tick the boxes under each family, then rerun `tools/build_checklist.py` to update
 the summary table. Ticks survive regeneration; `--reset` clears them.
 
-**20 of 20 families reviewed.**
+**20 of 26 families reviewed.**
 
 | Family | Domain | Check | Correct | Unambiguous | Rename | Renumber |
 | --- | --- | --- | :-: | :-: | :-: | :-: |
@@ -53,6 +53,12 @@ the summary table. Ticks survive regeneration; `--reset` clears them.
 | [`rtos-rm-bound`](#rtos-rm-bound) | rtos | auto | ✓ | ✓ | ✓ | ✓ |
 | [`qnx-ipc`](#qnx-ipc) | rtos | **manual** | ✓ | ✓ | ✓ | ✓ |
 | [`timer-tick`](#timer-tick) | timers | auto | ✓ | ✓ | ✓ | ✓ |
+| [`c-promotion`](#c-promotion) | c-source | auto |  |  |  |  |
+| [`c-w1c`](#c-w1c) | c-source | auto |  |  |  |  |
+| [`c-signext`](#c-signext) | c-source | auto |  |  |  |  |
+| [`c-fixedpoint`](#c-fixedpoint) | c-source | auto |  |  |  |  |
+| [`c-padding`](#c-padding) | c-source | **manual** |  |  |  |  |
+| [`c-wraparound`](#c-wraparound) | c-source | auto |  |  |  |  |
 
 ## Families
 
@@ -495,3 +501,212 @@ Why `1000` Hz: 16 MHz / 64 = 250 kHz counter clock, and 250 kHz / 250 ticks = 10
 - [x] Unambiguous
 - [x] Rename holds
 - [x] Renumber holds
+
+### c-promotion
+c-source, hard, auto
+
+**base** -> `0xFFFFFFF0`
+
+> On a target where `int` is 32 bits, what is the value of `value` after these statements? Give the answer as a 32-bit hexadecimal value.
+
+    uint8_t  flags = 0x0F;
+    uint32_t value = ~flags;
+
+**rename** -> `0xFFFFFFF0`
+
+> On a target whose `int` type is 32 bits wide, what value does `result` hold once these two statements have executed? Give the answer as a 32-bit hexadecimal value.
+
+    uint8_t  mask_bits = 0x0F;
+    uint32_t result    = ~mask_bits;
+
+**renumber** -> `0xFFFFFFCC`
+
+> On a target where `int` is 32 bits, what is the value of `value` after these statements? Give the answer as a 32-bit hexadecimal value.
+
+    uint8_t  flags = 0x33;
+    uint32_t value = ~flags;
+
+Why `0xFFFFFFF0`: `flags` undergoes integer promotion to `int` before `~` is applied, so the operand is 0x0000000F and the result is 0xFFFFFFF0, not the 0xF0 that an 8-bit complement would give. Assigning to uint32_t preserves all 32 bits.
+
+- [ ] Correct
+- [ ] Unambiguous
+- [ ] Rename holds
+- [ ] Renumber holds
+
+### c-w1c
+c-source, hard, auto
+
+**base** -> `0x00`
+
+> `STATUS` is an 8-bit hardware status register with write-1-to-clear semantics: writing a 1 to a bit clears that bit, and writing a 0 leaves that bit unchanged. `STATUS` currently reads 0b01101010. Firmware executes:
+
+    STATUS |= (1u << 1);
+
+What does `STATUS` read afterwards? Give the answer in hexadecimal.
+
+**rename** -> `0x00`
+
+> `IRQFLAGS` is an 8-bit interrupt flag register in which a bit is acknowledged by writing a 1 to it; writing a 0 to a bit position has no effect on that bit. `IRQFLAGS` currently reads 0b01101010. A driver executes:
+
+    IRQFLAGS |= (1u << 1);
+
+What does `IRQFLAGS` read afterwards? Give the answer in hexadecimal.
+
+**renumber** -> `0x02`
+
+> `STATUS` is an 8-bit hardware status register with write-1-to-clear semantics: writing a 1 to a bit clears that bit, and writing a 0 leaves that bit unchanged. `STATUS` currently reads 0b01101010. Firmware executes:
+
+    STATUS &= ~(1u << 1);
+
+What does `STATUS` read afterwards? Give the answer in hexadecimal.
+
+Why `0x00`: `|=` is a read-modify-write. It reads 0x6A, ORs in bit 1 (already set) and writes 0x6A back. Under write-1-to-clear every bit written as 1 is cleared, so all four set bits clear at once and the register reads 0x00. This is the classic read-modify-write bug on a W1C register.
+
+- [ ] Correct
+- [ ] Unambiguous
+- [ ] Rename holds
+- [ ] Renumber holds
+
+### c-signext
+c-source, hard, auto
+
+**base** -> `-198`
+
+> A 12-bit ADC returns a two's-complement sample in the low 12 bits of a 16-bit word, with the upper 4 bits zero. `raw` reads 0x0F3A. What signed value does the sample represent? Give the answer as a signed decimal integer.
+
+**rename** -> `-198`
+
+> A sensor reports 12-bit two's-complement readings, right-aligned in a 16-bit register whose top four bits always read zero. The register currently contains 0x0F3A. What signed quantity does that reading represent? Give the answer as a signed decimal integer.
+
+**renumber** -> `-1451`
+
+> A 12-bit ADC returns a two's-complement sample in the low 12 bits of a 16-bit word, with the upper 4 bits zero. `raw` reads 0x0A55. What signed value does the sample represent? Give the answer as a signed decimal integer.
+
+Why `-198`: The 12-bit field is 0xF3A = 3898. Bit 11 is set, so the value is negative: 3898 - 4096 = -198.
+
+- [ ] Correct
+- [ ] Unambiguous
+- [ ] Rename holds
+- [ ] Renumber holds
+
+### c-fixedpoint
+c-source, hard, auto
+
+**base** -> `0x1000`
+
+> Two Q15 fixed-point values are multiplied on a 32-bit target:
+
+    int16_t a = 0x4000;
+    int16_t b = 0x2000;
+    int16_t r = (int16_t)(((int32_t)a * b) >> 15);
+
+What is `r`? Give the answer in hexadecimal.
+
+**rename** -> `0x1000`
+
+> A DSP routine scales one Q15 sample by another on a 32-bit machine:
+
+    int16_t sample = 0x4000;
+    int16_t gain   = 0x2000;
+    int16_t out    = (int16_t)(((int32_t)sample * gain) >> 15);
+
+What is `out`? Give the answer in hexadecimal.
+
+**renumber** -> `0x3000`
+
+> Two Q15 fixed-point values are multiplied on a 32-bit target:
+
+    int16_t a = 0x6000;
+    int16_t b = 0x4000;
+    int16_t r = (int16_t)(((int32_t)a * b) >> 15);
+
+What is `r`? Give the answer in hexadecimal.
+
+Why `0x1000`: In Q15, 0x4000 is 0.5 and 0x2000 is 0.25. The 32-bit product is 0x08000000, and shifting right by 15 requantises to Q15: 0x1000, which is 0.125.
+
+- [ ] Correct
+- [ ] Unambiguous
+- [ ] Rename holds
+- [ ] Renumber holds
+
+### c-padding
+c-source, hard, **manual**
+
+**base** -> `12`
+
+> Compiled for a 32-bit ARM EABI target with natural alignment and no packing attributes:
+
+    struct frame {
+        uint8_t  id;
+        uint32_t timestamp;
+        uint8_t  flags;
+        uint16_t crc;
+    };
+
+What is `sizeof(struct frame)`? Give the answer as a decimal integer.
+
+**rename** -> `12`
+
+> Built for a 32-bit ARM EABI target using natural alignment, with no packed attribute applied:
+
+    struct record {
+        uint8_t  tag;
+        uint32_t stamp;
+        uint8_t  state;
+        uint16_t checksum;
+    };
+
+How many bytes does `sizeof(struct record)` evaluate to? Give the answer as a decimal integer.
+
+**renumber** -> `8`
+
+> Compiled for a 32-bit ARM EABI target with natural alignment and no packing attributes:
+
+    struct frame {
+        uint16_t id;
+        uint8_t  flags;
+        uint32_t timestamp;
+    };
+
+What is `sizeof(struct frame)`? Give the answer as a decimal integer.
+
+Why `12`: `id` at offset 0, three bytes of padding so `timestamp` lands on a 4-byte boundary at offset 4, `flags` at 8, one byte of padding so `crc` is 2-byte aligned at 10. That reaches 12, which is already a multiple of the struct's 4-byte alignment, so no tail padding is added. Verified by compilation during authoring.
+
+- [ ] Correct
+- [ ] Unambiguous
+- [ ] Rename holds
+- [ ] Renumber holds
+
+### c-wraparound
+c-source, hard, auto
+
+**base** -> `320`
+
+> A free-running 16-bit timer counts up and wraps at 0xFFFF. A measurement records `start` = 0xFF00 and `end` = 0x0040, with at most one wrap between the two readings.
+
+    uint16_t elapsed = end - start;
+
+How many timer ticks elapsed? Give the answer as a decimal integer.
+
+**rename** -> `320`
+
+> A 16-bit hardware counter runs continuously and rolls over from 0xFFFF to 0x0000. Two captures are taken, the first reading 0xFF00 and the second 0x0040, with no more than one rollover in between.
+
+    uint16_t delta = second - first;
+
+How many counts separate the two captures? Give the answer as a decimal integer.
+
+**renumber** -> `544`
+
+> A free-running 16-bit timer counts up and wraps at 0xFFFF. A measurement records `start` = 0xFFF0 and `end` = 0x0210, with at most one wrap between the two readings.
+
+    uint16_t elapsed = end - start;
+
+How many timer ticks elapsed? Give the answer as a decimal integer.
+
+Why `320`: Unsigned 16-bit subtraction wraps modulo 65536, which gives the correct elapsed count across a single wrap without any conditional: 0x0040 - 0xFF00 = 320 ticks.
+
+- [ ] Correct
+- [ ] Unambiguous
+- [ ] Rename holds
+- [ ] Renumber holds

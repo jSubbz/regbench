@@ -32,6 +32,10 @@ def test_every_family_has_every_variant(family):
     assert present == set(VARIANTS)
 
 
+def test_difficulties_are_known():
+    assert {item["difficulty"] for item in ITEMS} <= {"easy", "medium", "hard"}
+
+
 def test_variants_are_known():
     assert {item["variant"] for item in ITEMS} <= set(VARIANTS)
 

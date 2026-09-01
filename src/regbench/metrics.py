@@ -53,6 +53,18 @@ def variant_accuracy() -> Metric:
     return grouped(accuracy(), "variant", all="samples", all_label="all")
 
 
+def difficulty_accuracy() -> Metric:
+    """Accuracy broken out per difficulty tier.
+
+    Reported because a headline figure computed over tiers of different
+    difficulty hides a ceiling effect: if the easy tier saturates, the
+    perturbation deltas computed over the whole set cannot move, whatever the
+    hard tier is doing. No aggregate is emitted, since ``variant_accuracy``
+    already reports one under the same key.
+    """
+    return grouped(accuracy(), "difficulty", all=False)
+
+
 def _delta(
     comparison: str,
     reference: str = "base",

@@ -12,6 +12,7 @@ from inspect_ai.scorer import CORRECT, INCORRECT, Score, Target, accuracy, score
 from inspect_ai.solver import TaskState
 
 from .metrics import (
+    difficulty_accuracy,
     no_answer_rate,
     rename_consistency,
     rename_delta,
@@ -27,6 +28,7 @@ from .parsing import compare
         accuracy(),
         stderr(),
         variant_accuracy(),
+        difficulty_accuracy(),
         rename_delta(),
         renumber_delta(),
         rename_consistency(),

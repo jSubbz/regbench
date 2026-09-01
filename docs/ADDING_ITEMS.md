@@ -100,7 +100,7 @@ Field by field:
 | `family` | Slug shared by all three variants. |
 | `variant` | One of `base`, `rename`, `renumber`. |
 | `domain` | Free-form slug used by the `-T domains=` filter. |
-| `difficulty` | `easy` or `medium`. Self-labelled, not calibrated. |
+| `difficulty` | `easy`, `medium` or `hard`. Self-labelled, not calibrated. Reported separately by `difficulty_accuracy`. |
 | `question` | The prompt. Must be unique across the whole file. State any convention that could differ, and name the unit and number base you want back. |
 | `answer_type` | `integer`, `quantity` or `choice`. |
 | `target` | The answer as a string, in the unit named in `unit`. |

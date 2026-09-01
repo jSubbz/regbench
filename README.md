@@ -7,10 +7,18 @@ A small benchmark for register-level embedded systems reasoning, implemented wit
 forms, so a run reports not only how often a model is right but how much of that
 score survives a change of wording or a change of numbers.
 
-60 items across 20 families, covering I2C addressing, SPI configuration, UART
-framing and baud generation, ADC quantization, PWM and timer configuration,
-GPIO read-modify-write, register field extraction, and real-time scheduling and
-QNX Neutrino message-passing IPC.
+78 items across 26 families in two difficulty tiers.
+
+The first 20 families are single-step calculations: I2C addressing, SPI
+configuration, UART framing and baud generation, ADC quantization, PWM and timer
+configuration, GPIO read-modify-write, register field extraction, real-time
+scheduling, and QNX Neutrino message-passing IPC.
+
+The remaining 6 present C source and are harder: integer promotion in bitwise
+expressions, write-1-to-clear register semantics under read-modify-write, sign
+extension of sub-word two's-complement samples, Q15 fixed-point requantisation,
+struct padding under a stated ABI, and unsigned modular arithmetic across a timer
+wrap. They exist because the first tier saturates; see `docs/RESULTS.md`.
 
 ## The idea
 
@@ -40,6 +48,7 @@ signed deltas in percentage points against the `base` items.
 | --- | --- |
 | `accuracy`, `stderr` | overall, across all 60 items |
 | `base`, `rename`, `renumber`, `all` | accuracy per variant |
+| `easy`, `medium`, `hard` | accuracy per difficulty tier |
 | `rename_delta` | percentage points lost from `base` to `rename` |
 | `renumber_delta` | percentage points lost from `base` to `renumber` |
 | `rename_consistency` | fraction of families graded alike on both variants |
@@ -128,7 +137,7 @@ procedure for adding a family of items.
 
 ## Limitations
 
-- **Small.** 20 families demonstrates the method. The standard error on 60 items
+- **Small.** 26 families demonstrates the method. The standard error on 78 items
   is too wide to rank models against each other.
 - **One author.** A consistent misconception would be invisible. A second domain
   reviewer is the next step.

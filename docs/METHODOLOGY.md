@@ -12,9 +12,22 @@ in firmware work, where being almost right produces a device that misbehaves in
 the field. That makes them a reasonable probe of whether a model is usable as an
 assistant in that setting, and it keeps the answer key checkable.
 
-The items are easy on purpose. On an easy set the ceiling is otherwise
-reachable, so a drop under perturbation is visible. On a hard set, accuracy is
-already low and a robustness delta is buried in noise.
+The original 20 families are easy on purpose. On an easy set the ceiling is
+otherwise reachable, so a drop under perturbation is visible. On a set that is
+too hard, accuracy is already low and a robustness delta is buried in noise.
+
+That reasoning has a failure mode, and the first three runs hit it: if the easy
+tier saturates completely, the deltas cannot move either, because there is no
+headroom for a drop. Six harder families presenting C source were added for that
+reason, and `difficulty_accuracy` reports the tiers separately so a saturated
+tier cannot hide the behaviour of the other. The hard families target constructs
+where correct-looking code is wrong: integer promotion widening an operand before
+a bitwise operation, a read-modify-write on a write-1-to-clear register, sign
+extension of a sub-word two's-complement field, Q15 requantisation, struct
+padding, and modular arithmetic across a counter wrap.
+
+Answers for the C families were verified by compiling and running the constructs
+during authoring, in addition to the stored check expressions.
 
 ## Why paired variants
 
